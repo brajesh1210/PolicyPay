@@ -54,8 +54,8 @@ app.use("/v1", v1Router);
 
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
-  console.log(`PolicyPay backend running on http://localhost:${env.PORT}`);
+app.listen(env.PORT, "0.0.0.0", () => {
+  console.log(`PolicyPay backend running on port ${env.PORT}`);
 });
 
 export default app;

@@ -7,5 +7,9 @@
     "frontend",
     "demo-agent",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @policypay/contracts && npm run build --workspace backend",
+    "start": "npm run start --workspace backend"
+  }
 }
