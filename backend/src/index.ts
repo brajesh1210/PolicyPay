@@ -15,6 +15,7 @@ import transactionsRoutes from "./routes/transactions.routes";
 import killSwitchRoutes from "./routes/killSwitch.routes";
 import approvalsRoutes from "./routes/approvals.routes";
 import analyticsRoutes from "./routes/analytics.routes";
+import simulationRoutes from "./routes/simulation.routes";
 
 const app = express();
 
@@ -46,6 +47,7 @@ v1Router.use("/transactions", transactionsRoutes);
 v1Router.use("/kill-switch", killSwitchRoutes);
 v1Router.use("/approvals", approvalsRoutes);
 v1Router.use("/analytics", analyticsRoutes);
+v1Router.use("/simulate", simulationRoutes);
 v1Router.use("/", authorizeRoutes);
 
 app.use("/v1", v1Router);
