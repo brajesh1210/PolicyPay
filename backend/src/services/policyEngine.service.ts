@@ -20,11 +20,19 @@ export interface PolicyEvaluationResult {
   monthlySpend: number;
 }
 
+export interface EvaluatePolicyOptions {
+  dryRun?: boolean;
+  overridePolicy?: Policy;
+}
+
 export class PolicyEngineService {
   async evaluatePolicy(
     agent: Agent & { policy: Policy },
-    body: AuthorizePaymentRequest
+    body: AuthorizePaymentRequest,
+    options?: EvaluatePolicyOptions
   ): Promise<PolicyEvaluationResult> {
+    const activePolicy = options?.overridePolicy || agent.policy;
+    const isDryRun = options?.dryRun || false;
     const checks: PolicyCheck[] = [];
 
     // Fetch current spend and frequency metrics
@@ -45,9 +53,7 @@ export class PolicyEngineService {
       reputation: merchantRow ? merchantRow.reputation : MerchantReputation.UNKNOWN,
     };
 
-    // ------------------------------------------------------------------------
     // Step 2: Global Kill Switch
-    // ------------------------------------------------------------------------
     const globalConfig = await globalConfigService.getConfig();
     if (globalConfig.killSwitchActive) {
       checks.push({
@@ -70,9 +76,7 @@ export class PolicyEngineService {
       detail: "Global kill switch inactive",
     });
 
-    // ------------------------------------------------------------------------
     // Step 3: Agent Kill Switch
-    // ------------------------------------------------------------------------
     if (agent.killSwitchActive) {
       checks.push({
         check: "agent_kill_switch",
@@ -94,9 +98,7 @@ export class PolicyEngineService {
       detail: "Agent kill switch inactive",
     });
 
-    // ------------------------------------------------------------------------
     // Step 4: Agent Status
-    // ------------------------------------------------------------------------
     if (agent.status !== "ACTIVE") {
       checks.push({
         check: "agent_status",
@@ -118,10 +120,8 @@ export class PolicyEngineService {
       detail: "Agent status is ACTIVE",
     });
 
-    // ------------------------------------------------------------------------
     // Step 5: Policy Enabled
-    // ------------------------------------------------------------------------
-    if (!agent.policy.enabled) {
+    if (!activePolicy.enabled) {
       checks.push({
         check: "policy_enabled",
         passed: false,
@@ -142,9 +142,7 @@ export class PolicyEngineService {
       detail: "Policy is enabled",
     });
 
-    // ------------------------------------------------------------------------
     // Step 6: Duplicate Guard
-    // ------------------------------------------------------------------------
     const intentHash = duplicateGuardService.buildHash(
       agent.id,
       body.merchant.domain,
@@ -152,6 +150,10 @@ export class PolicyEngineService {
       body.idempotency_key
     );
     const reserved = await duplicateGuardService.checkAndReserve(intentHash);
+    if (isDryRun && reserved) {
+      await duplicateGuardService.release(intentHash);
+    }
+
     if (!reserved) {
       checks.push({
         check: "duplicate_guard",
@@ -173,9 +175,7 @@ export class PolicyEngineService {
       detail: "Idempotency key and intent reserved successfully",
     });
 
-    // ------------------------------------------------------------------------
     // Step 7: Merchant Reputation Check
-    // ------------------------------------------------------------------------
     if (merchantInfo.reputation === MerchantReputation.BLOCKED) {
       checks.push({
         check: "merchant_reputation",
@@ -197,10 +197,8 @@ export class PolicyEngineService {
       detail: `Merchant reputation: ${merchantInfo.reputation}`,
     });
 
-    // ------------------------------------------------------------------------
     // Step 8: Unknown Merchant Check
-    // ------------------------------------------------------------------------
-    if (merchantInfo.reputation === MerchantReputation.UNKNOWN && agent.policy.blockUnknownMerchants) {
+    if (merchantInfo.reputation === MerchantReputation.UNKNOWN && activePolicy.blockUnknownMerchants) {
       checks.push({
         check: "unknown_merchant_allowed",
         passed: false,
@@ -221,11 +219,9 @@ export class PolicyEngineService {
       detail: "Unknown merchant check passed",
     });
 
-    // ------------------------------------------------------------------------
     // Step 9: Category Rules
-    // ------------------------------------------------------------------------
-    const blockedCategories = (agent.policy.blockedCategories as string[] | null) || [];
-    const allowedCategories = (agent.policy.allowedCategories as string[] | null) || [];
+    const blockedCategories = (activePolicy.blockedCategories as string[] | null) || [];
+    const allowedCategories = (activePolicy.allowedCategories as string[] | null) || [];
     const category = merchantInfo.category || "";
 
     if (category && blockedCategories.includes(category)) {
@@ -266,14 +262,12 @@ export class PolicyEngineService {
       detail: "Category rules passed",
     });
 
-    // ------------------------------------------------------------------------
     // Step 10: Per-Transaction Limit
-    // ------------------------------------------------------------------------
-    if (body.amount_usd > agent.policy.perTxLimitUsd) {
+    if (body.amount_usd > activePolicy.perTxLimitUsd) {
       checks.push({
         check: "per_transaction_limit",
         passed: false,
-        detail: `Amount $${body.amount_usd} exceeds per-transaction limit of $${agent.policy.perTxLimitUsd}`,
+        detail: `Amount $${body.amount_usd} exceeds per-transaction limit of $${activePolicy.perTxLimitUsd}`,
       });
       return {
         failed: true,
@@ -290,14 +284,12 @@ export class PolicyEngineService {
       detail: "Per-transaction limit check passed",
     });
 
-    // ------------------------------------------------------------------------
     // Step 11: Daily Budget
-    // ------------------------------------------------------------------------
-    if (dailySpend + body.amount_usd > agent.policy.dailyBudgetUsd) {
+    if (dailySpend + body.amount_usd > activePolicy.dailyBudgetUsd) {
       checks.push({
         check: "daily_budget",
         passed: false,
-        detail: `Projected daily spend $${(dailySpend + body.amount_usd).toFixed(2)} exceeds daily budget $${agent.policy.dailyBudgetUsd}`,
+        detail: `Projected daily spend $${(dailySpend + body.amount_usd).toFixed(2)} exceeds daily budget $${activePolicy.dailyBudgetUsd}`,
       });
       return {
         failed: true,
@@ -314,14 +306,12 @@ export class PolicyEngineService {
       detail: "Daily budget check passed",
     });
 
-    // ------------------------------------------------------------------------
     // Step 12: Monthly Budget
-    // ------------------------------------------------------------------------
-    if (monthlySpend + body.amount_usd > agent.policy.monthlyBudgetUsd) {
+    if (monthlySpend + body.amount_usd > activePolicy.monthlyBudgetUsd) {
       checks.push({
         check: "monthly_budget",
         passed: false,
-        detail: `Projected monthly spend $${(monthlySpend + body.amount_usd).toFixed(2)} exceeds monthly budget $${agent.policy.monthlyBudgetUsd}`,
+        detail: `Projected monthly spend $${(monthlySpend + body.amount_usd).toFixed(2)} exceeds monthly budget $${activePolicy.monthlyBudgetUsd}`,
       });
       return {
         failed: true,
@@ -338,14 +328,12 @@ export class PolicyEngineService {
       detail: "Monthly budget check passed",
     });
 
-    // ------------------------------------------------------------------------
     // Step 13: Hourly Frequency Limit
-    // ------------------------------------------------------------------------
-    if (hourCount >= agent.policy.maxTxPerHour) {
+    if (hourCount >= activePolicy.maxTxPerHour) {
       checks.push({
         check: "hourly_frequency",
         passed: false,
-        detail: `Hourly count (${hourCount}) reached max limit (${agent.policy.maxTxPerHour})`,
+        detail: `Hourly count (${hourCount}) reached max limit (${activePolicy.maxTxPerHour})`,
       });
       return {
         failed: true,
@@ -362,14 +350,12 @@ export class PolicyEngineService {
       detail: "Hourly frequency check passed",
     });
 
-    // ------------------------------------------------------------------------
     // Step 14: Daily Frequency Limit
-    // ------------------------------------------------------------------------
-    if (dayCount >= agent.policy.maxTxPerDay) {
+    if (dayCount >= activePolicy.maxTxPerDay) {
       checks.push({
         check: "daily_frequency",
         passed: false,
-        detail: `Daily count (${dayCount}) reached max limit (${agent.policy.maxTxPerDay})`,
+        detail: `Daily count (${dayCount}) reached max limit (${activePolicy.maxTxPerDay})`,
       });
       return {
         failed: true,
