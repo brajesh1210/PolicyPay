@@ -5,6 +5,9 @@ import cors from "cors";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/errorHandler";
 import authRoutes from "./routes/auth.routes";
+import alertsRoutes from "./routes/alerts.routes";
+import auditLogsRoutes from "./routes/auditLogs.routes";
+import authorizeRoutes from "./routes/authorize.routes";
 
 const app = express();
 
@@ -27,6 +30,9 @@ app.get("/health", (_req, res) => {
 
 const v1Router = Router();
 v1Router.use("/auth", authRoutes);
+v1Router.use("/alerts", alertsRoutes);
+v1Router.use("/audit-logs", auditLogsRoutes);
+v1Router.use("/", authorizeRoutes);
 
 app.use("/v1", v1Router);
 
