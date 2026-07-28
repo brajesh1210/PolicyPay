@@ -8,6 +8,7 @@
     "demo-agent",
     "packages/*"
   ],
+
   "dependencies": {
     "@hookform/resolvers": "^5.5.7",
     "@policypay/contracts": "^1.0.0",
@@ -30,5 +31,12 @@
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10"
+  },
+
+
+  "scripts": {
+    "build": "npm run build --workspace @policypay/contracts && npm run build --workspace backend",
+    "start": "npm run start --workspace backend"
   }
 }
+
