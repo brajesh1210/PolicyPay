@@ -1,0 +1,28 @@
+{
+  "name": "demo-agent",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "merchants": "ts-node src/merchants/start-all.ts",
+    "demo": "ts-node src/run-all.ts",
+    "scenario:1": "ts-node src/scenarios/1-normal.ts",
+    "scenario:2": "ts-node src/scenarios/2-unknown-merchant.ts",
+    "scenario:3": "ts-node src/scenarios/3-budget-exceeded.ts",
+    "scenario:4": "ts-node src/scenarios/4-approval-required.ts",
+    "scenario:5": "ts-node src/scenarios/5-prompt-injection.ts",
+    "check": "ts-node src/check-setup.ts"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "ts-node": "10.9.2",
+    "typescript": "5.5.4",
+    "@types/node": "20.14.10",
+    "@types/express": "4.17.21"
+  }
+}
