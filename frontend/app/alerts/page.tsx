@@ -167,19 +167,18 @@ export default function AlertsPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
                     <span className={severityTagClass(a.severity)}>{a.severity}</span>
-                    <b style={{ fontSize: 14, fontWeight: 800 }}>{a.title}</b>
+                    <b className="fs-base fw-black">{a.title}</b>
                     <span
+                      className="fs-mono-xs"
                       style={{
                         marginLeft: "auto",
-                        fontSize: 11.5,
                         color: "var(--ink-3)",
-                        fontFamily: "var(--font-mono), monospace",
                       }}
                     >
                       {ago(a.createdAt)}
                     </span>
                   </div>
-                  <p style={{ fontSize: 13, color: "var(--ink-2)", marginTop: 6, lineHeight: 1.55 }}>
+                  <p className="fs-body-sm" style={{ color: "var(--ink-2)", marginTop: 6, lineHeight: 1.55 }}>
                     {a.description}
                   </p>
                   <div style={{ display: "flex", gap: 8, marginTop: 11, flexWrap: "wrap" }}>

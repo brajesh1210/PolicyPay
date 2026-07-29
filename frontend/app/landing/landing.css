@@ -13,7 +13,7 @@
   --b-900:#0D1949;   
 
   --page:#FFFFFF;
-  --tint:#F6F8FD;
+  --tint:#F8FAFD;
   --card:#FFFFFF;
   --line:#E4EAF6;
   --line-2:#D3DEF3;
@@ -22,9 +22,9 @@
   --ink-2:#3A4668;
   --ink-3:#64708F;
 
-  --ok:#0E9F6E;
-  --warn:#B45309;
-  --bad:#D64545;
+  --ok:#059669;
+  --warn:#D97706;
+  --bad:#DC2626;
 
   --grad:linear-gradient(135deg,#3787F6 0%,#236CDF 38%,#1459D0 68%,#112A6C 100%);
   --grad-soft:linear-gradient(135deg,#EAF2FE 0%,#DCEAFE 100%);
@@ -44,7 +44,7 @@
 .lp{
   max-width:100vw;
   background:var(--page);color:var(--ink);
-  font-family:var(--font-jakarta),system-ui,-apple-system,sans-serif;
+  font-family:var(--font-sans),system-ui,-apple-system,sans-serif;
   font-size:16px;line-height:1.5;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
@@ -126,8 +126,8 @@
 .lp .live::after{content:'';position:absolute;inset:-3px;border-radius:50%;
   background:var(--ok);opacity:.3;animation:ping 2s var(--e) infinite}
 @keyframes ping{0%{transform:scale(.7);opacity:.5}70%,100%{transform:scale(2.1);opacity:0}}
-.lp h1{font-size:clamp(31px,4.4vw,52px);line-height:1.08;letter-spacing:-1.8px;font-weight:800}
-.lp h2{font-size:clamp(27px,3.8vw,46px);line-height:1.1;letter-spacing:-1.5px;font-weight:800}
+.lp h1{font-size:clamp(31px,4.4vw,52px);line-height:1.08;letter-spacing:-1.2px;font-weight:800}
+.lp h2{font-size:clamp(27px,3.8vw,46px);line-height:1.1;letter-spacing:-1px;font-weight:800}
 .lp h3{font-size:clamp(17px,1.6vw,20px);line-height:1.28;letter-spacing:-.5px;font-weight:700}
 .lp h1 .serif, .lp h2 .serif{font-weight:400;letter-spacing:-1px;color:var(--b-600)}
 .lp .lede{font-size:clamp(15px,1.35vw,17.5px);line-height:1.62;color:var(--ink-2)}
@@ -411,8 +411,8 @@
 .lp .term-t{font-size:10.5px;padding:14px}
 .lp .steps .step:nth-child(n+5){display:none}
 .lp .cta .btn{flex:1;min-width:150px}
-.lp h1{letter-spacing:-1.2px}
-.lp h2{letter-spacing:-.9px}
+  .lp h1{letter-spacing:-0.8px}
+  .lp h2{letter-spacing:-0.5px}
 }
 @media(max-width:420px){
 .lp .nav-r .btn-p{padding:0 16px;font-size:13.5px}

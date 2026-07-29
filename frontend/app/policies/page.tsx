@@ -113,7 +113,7 @@ export default function PoliciesPage() {
   return (
     <AppShell title="Policies" sub="The rulebook every agent lives inside">
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
-        <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: 600 }}>
+        <p className="fs-body" style={{ color: "var(--ink-2)", maxWidth: 600 }}>
           A policy is the rulebook one or more agents live inside. Change it here and every
           agent on it follows the new limits from the next request onward.
         </p>
@@ -151,7 +151,7 @@ export default function PoliciesPage() {
                 }
               />
               <CardBody>
-                <p style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.6 }}>
+                <p className="fs-body" style={{ color: "var(--ink-2)", lineHeight: 1.6 }}>
                   {BLURB[p.template] ?? "Custom policy."}
                 </p>
 
@@ -177,13 +177,13 @@ export default function PoliciesPage() {
                           fontSize: 10.5,
                           fontWeight: 800,
                           letterSpacing: ".8px",
-                          textTransform: "uppercase",
+                          textTransform: "uppercase" as const,
                           color: "var(--ink-3)",
                         }}
                       >
                         {k}
                       </span>
-                      <b style={{ display: "block", fontSize: 18, fontWeight: 800, marginTop: 3 }}>
+                      <b className="tabnum" style={{ display: "block", fontSize: 18, fontWeight: 800, marginTop: 3 }}>
                         {v}
                       </b>
                     </div>

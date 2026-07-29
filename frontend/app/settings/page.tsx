@@ -87,14 +87,14 @@ export default function SettingsPage() {
             <CardHeader title="Your account" sub="Signed in as the workspace admin" />
             <CardBody>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-                <span className="av" style={{ width: 52, height: 52, fontSize: 17 }}>
+                <span className="av fs-lg" style={{ width: 52, height: 52 }}>
                   {initials(session?.user?.name, session?.user?.email)}
                 </span>
                 <div>
-                  <b style={{ fontSize: 15, fontWeight: 800, display: "block" }}>
+                  <b className="fs-title" style={{ display: "block" }}>
                     {session?.user?.name ?? "—"}
                   </b>
-                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
+                  <span className="fs-body-sm" style={{ color: "var(--ink-3)" }}>
                     {session?.user?.email ?? "—"} · {session?.user?.role ?? "USER"}
                   </span>
                 </div>
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                           </span>
                         </td>
                         <td className="num">{money(a.totalSpent)}</td>
-                        <td style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
+                        <td className="fs-meta">
                           {ago(a.lastActiveAt)}
                         </td>
                       </tr>
@@ -233,12 +233,12 @@ export default function SettingsPage() {
               </KV>
               <KV k="x402 network">base-sepolia</KV>
               <KV k="Backend">
-                <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
+                <span className="mono fs-mono-xs" style={{ wordBreak: "break-all" }}>
                   {API_BASE.replace(/^https?:\/\//, "")}
                 </span>
               </KV>
               <KV k="Version">
-                <span className="mono" style={{ fontSize: 12 }}>
+                <span className="mono fs-mono-sm">
                   v1.0.0
                 </span>
               </KV>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader title="Before a live demo" sub="Run these in order" />
             <CardBody>
-              <p style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 16 }}>
+              <p className="fs-body-sm" style={{ color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 16 }}>
                 Spend counters live in Redis and only reset at 00:00 UTC. Clear them from the
                 Railway console so all five demo scenarios start from a clean slate:
               </p>
@@ -258,7 +258,7 @@ export default function SettingsPage() {
               >
                 npm run reset:counters --workspace backend
               </div>
-              <p style={{ fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.6 }}>
+              <p className="fs-meta" style={{ lineHeight: 1.6 }}>
                 Then run <b>npm run demo</b> from the demo-agent folder. All five scenarios
                 should pass.
               </p>
