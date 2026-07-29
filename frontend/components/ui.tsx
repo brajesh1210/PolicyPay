@@ -369,7 +369,7 @@ export function Skeleton({
         <div
           key={i}
           className="sk sk-line"
-          style={{ height, width: i === lines - 1 ? "62%" : "100%" }}
+          style={{ height, width: i === 0 ? "100%" : i === lines - 1 ? "40%" : "85%" }}
         />
       ))}
     </div>
