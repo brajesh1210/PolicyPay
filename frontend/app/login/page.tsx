@@ -97,7 +97,7 @@ function LoginForm() {
 
             <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "4px 0 22px" }}>
               <Switch checked={keep} onChange={setKeep} label="Keep me signed in" />
-              <span style={{ fontSize: 13, color: "var(--ink-2)", fontWeight: 600 }}>
+              <span className="fs-body-sm fw-semi" style={{ color: "var(--ink-2)" }}>
                 Keep me signed in
               </span>
             </div>
@@ -173,10 +173,9 @@ function LoginForm() {
           </div>
 
           <p
+            className="fs-mono-xs"
             style={{
               marginTop: 22,
-              fontFamily: "var(--font-mono), monospace",
-              fontSize: 11.5,
               color: "rgba(255,255,255,.4)",
             }}
           >

@@ -164,11 +164,11 @@ export default function MerchantsPage() {
                       <div className="sub mono">{m.domain}</div>
                     </td>
                     <td>{repTag(m.reputation)}</td>
-                    <td style={{ fontSize: 13, color: "var(--ink-2)" }}>{m.category}</td>
+                    <td className="fs-body-sm" style={{ color: "var(--ink-2)" }}>{m.category}</td>
                     <td>
                       <span className="code">{repPoints(m.reputation)}</span>
                     </td>
-                    <td style={{ fontSize: 12.5, color: "var(--ink-3)", whiteSpace: "nowrap" }}>
+                    <td className="fs-meta" style={{ whiteSpace: "nowrap" }}>
                       {istDateTime(m.createdAt)}
                     </td>
                     <td>
@@ -269,13 +269,13 @@ export default function MerchantsPage() {
               <span style={{ color: "var(--bad)" }}>Instant deny</span>
             </KV>
             <div
+              className="fs-body-sm"
               style={{
                 marginTop: 16,
                 padding: "14px 16px",
                 borderRadius: "var(--r)",
                 background: "var(--b-100)",
                 border: "1px solid var(--b-200)",
-                fontSize: 13,
                 color: "var(--b-800)",
                 lineHeight: 1.6,
               }}

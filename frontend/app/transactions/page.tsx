@@ -101,8 +101,8 @@ export default function TransactionsPage() {
               ]}
             />
             <select
-              className="in"
-              style={{ width: "auto", height: 34, fontSize: 12.5, padding: "0 34px 0 12px" }}
+              className="in fs-sm"
+              style={{ width: "auto", height: 34, padding: "0 34px 0 12px" }}
               aria-label="Filter by agent"
               value={agentId}
               onChange={(e) => changeFilter(() => setAgentId(e.target.value))}
@@ -147,13 +147,13 @@ export default function TransactionsPage() {
                 <tbody>
                   {rows.map((t) => (
                     <tr key={t.id}>
-                      <td className="mono" style={{ fontSize: 12, color: "var(--ink-3)" }}>
+                      <td className="mono fs-mono-sm" style={{ color: "var(--ink-3)" }}>
                         {shortId(t.id)}
                       </td>
                       <td>
                         <b>{t.agent?.name ?? shortId(t.agentId, 6, 3)}</b>
                       </td>
-                      <td className="mono" style={{ fontSize: 12.5 }}>
+                      <td className="mono fs-mono-base">
                         {t.merchantDomain}
                         {t.purpose ? (
                           <div
@@ -180,7 +180,7 @@ export default function TransactionsPage() {
                           {decisionLabel(t.decision)}
                         </span>
                       </td>
-                      <td style={{ color: "var(--ink-3)", fontSize: 12.5, whiteSpace: "nowrap" }}>
+                      <td className="fs-meta" style={{ whiteSpace: "nowrap" }}>
                         {ago(t.createdAt)}
                       </td>
                       <td>
@@ -258,7 +258,7 @@ export default function TransactionsPage() {
               </KV>
               {detail.idempotencyKey ? (
                 <KV k="Idempotency key">
-                  <span className="mono" style={{ fontSize: 12 }}>
+                  <span className="mono fs-mono-sm">
                     {shortId(detail.idempotencyKey, 14, 6)}
                   </span>
                 </KV>

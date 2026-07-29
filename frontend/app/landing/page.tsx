@@ -63,13 +63,13 @@ export default function LandingPage() {
             <div className="col l">
               <div className="card rv">
                 <div className="card-h"><i className="tick" style={{background: 'var(--bad)'}}></i>Blocked today</div>
-                <div className="big">3 <span style={{fontSize: '13px', fontWeight: '600', color: 'var(--ink-3)', letterSpacing: '0'}}>payments</span></div>
+                <div className="big">3 <span className="fs-body-sm fw-semi" style={{color: 'var(--ink-3)', letterSpacing: '0'}}>payments</span></div>
                 <div className="row"><span className="dom">unknown-service.xyz</span><span className="vd no">DENY</span></div>
                 <div className="row"><span className="dom">shady-payments.com</span><span className="vd no">DENY</span></div>
               </div>
               <div className="card rv">
                 <div className="card-h"><i className="tick" style={{background: 'var(--b-500)'}}></i>Daily budget</div>
-                <div className="big">$14.50 <span style={{fontSize: '14px', fontWeight: '600', color: 'var(--ink-3)', letterSpacing: '0'}}>/ $20.00</span></div>
+                <div className="big">$14.50 <span className="fs-base fw-semi" style={{color: 'var(--ink-3)', letterSpacing: '0'}}>/ $20.00</span></div>
                 <div className="track"><i data-fill="72.5"></i></div>
                 <div className="foot"><span>72.5% used</span><span>resets 00:00 UTC</span></div>
               </div>
@@ -306,8 +306,8 @@ export default function LandingPage() {
                 <div className="pr-top"><span className="l">Risk score</span><span className="v" id="rs">0 / 100</span></div>
                 <div className="meter"><i id="rm"></i></div>
               </div>
-              <div className="pr rv"><span className="l">Verdict</span><span className="vd no" id="vd" style={{fontSize: '11.5px', padding: '5px 13px'}}>DENY</span></div>
-              <div className="pr rv"><span className="l">Reason</span><span className="v" style={{fontSize: '11px', color: 'var(--bad)'}}>PROMPT_INJECTION</span></div>
+              <div className="pr rv"><span className="l">Verdict</span><span className="vd no fs-xs" id="vd" style={{padding: '5px 13px'}}>DENY</span></div>
+              <div className="pr rv"><span className="l">Reason</span><span className="v fs-xs" style={{color: 'var(--bad)'}}>PROMPT_INJECTION</span></div>
             </div>
           </div>
         </div>

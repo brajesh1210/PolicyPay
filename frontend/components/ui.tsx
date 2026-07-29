@@ -275,7 +275,7 @@ export function RiskGauge({
       </svg>
       <div className="mid">
         <div>
-          <b style={{ color: c, fontSize: size < 150 ? 28 : undefined }}>{score}</b>
+          <b className={size < 150 ? "fs-xl" : ""} style={{ color: c }}>{score}</b>
           <span>{label}</span>
         </div>
       </div>
@@ -538,7 +538,7 @@ export function StatCard({
         <div className="vl">
           {value}
           {unit ? (
-            <span style={{ fontSize: 16, letterSpacing: 0 }}> {unit}</span>
+            <span className="fs-md" style={{ letterSpacing: 0 }}> {unit}</span>
           ) : null}
         </div>
       )}
