@@ -112,7 +112,7 @@ export default function ApprovalsPage() {
                         {tx?.purpose ? <KV k="Purpose">{tx.purpose}</KV> : null}
                         <KV k="Expires">{istDateTime(a.expiresAt)} IST</KV>
                         <KV k="Approval ID">
-                          <span className="mono" style={{ fontSize: 12 }}>
+                          <span className="mono fs-mono-sm">
                             {a.id}
                           </span>
                         </KV>

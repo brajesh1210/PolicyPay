@@ -171,7 +171,7 @@ export default function AgentsPage() {
                 </div>
 
                 <div style={{ marginTop: 16 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5 }}>
+                  <div className="fs-meta" style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ color: "var(--ink-3)", fontWeight: 600 }}>Total spent</span>
                     <b className="num">
                       {money(a.totalSpent)} / {money(cap)}
@@ -193,14 +193,13 @@ export default function AgentsPage() {
                   </div>
                   <div>
                     <span>Last seen</span>
-                    <b style={{ fontSize: 13 }}>{ago(a.lastActiveAt)}</b>
+                    <b className="fs-body-sm">{ago(a.lastActiveAt)}</b>
                   </div>
                   <div>
                     <span>Kill switch</span>
                     <b
                       style={{
                         color: a.killSwitchActive ? "var(--bad)" : "var(--ok)",
-                        fontSize: 13,
                       }}
                     >
                       {a.killSwitchActive ? "On" : "Off"}

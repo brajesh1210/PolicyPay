@@ -359,7 +359,7 @@ export default function DashboardPage() {
                       <b>{t.agentName}</b>
                       <div className="sub mono">{shortId(t.id)}</div>
                     </td>
-                    <td className="mono" style={{ fontSize: 12.5 }}>
+                    <td className="mono fs-mono-base">
                       {t.merchantDomain}
                     </td>
                     <td className="num">
@@ -373,7 +373,7 @@ export default function DashboardPage() {
                         {decisionLabel(t.decision)}
                       </span>
                     </td>
-                    <td style={{ color: "var(--ink-3)", fontSize: 12.5, whiteSpace: "nowrap" }}>
+                    <td className="fs-meta" style={{ whiteSpace: "nowrap" }}>
                       {ago(t.createdAt)}
                     </td>
                   </tr>
@@ -409,7 +409,8 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div
-                    style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginTop: 4 }}
+                    className="fs-body-sm"
+                    style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}
                   >
                     <span style={{ color: "var(--ink-3)", fontWeight: 600 }}>
                       Total spent
@@ -421,7 +422,7 @@ export default function DashboardPage() {
                   <div className={`prog ${cls}`}>
                     <i style={{ width: `${p100}%` }} />
                   </div>
-                  <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 9 }}>
+                  <p className="fs-caption" style={{ marginTop: 9 }}>
                     {a.totalTx} decisions · resets 00:00 UTC (5:30 AM IST)
                   </p>
                 </CardBody>
@@ -451,7 +452,7 @@ export default function DashboardPage() {
                 label="Global kill switch"
               />
             </div>
-            <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 10 }}>
+            <p className="fs-caption" style={{ marginTop: 10 }}>
               Currently{" "}
               <b style={{ color: killOn ? "var(--bad)" : "var(--ok)" }}>
                 {killOn ? "active" : "inactive"}

@@ -84,15 +84,15 @@ export default function AuditLogsPage() {
                   {rows.map((l) => (
                     <tr key={l.id}>
                       <td
-                        className="mono"
-                        style={{ fontSize: 12, color: "var(--ink-3)", whiteSpace: "nowrap" }}
+                        className="mono fs-mono-sm"
+                        style={{ color: "var(--ink-3)", whiteSpace: "nowrap" }}
                       >
                         {istTime(l.createdAt)}
                       </td>
-                      <td style={{ fontSize: 13 }}>
+                      <td className="fs-body-sm">
                         <b>{l.transaction?.agent?.name ?? "—"}</b>
                       </td>
-                      <td className="mono" style={{ fontSize: 12.5 }}>
+                      <td className="mono fs-mono-base">
                         {l.transaction?.merchantDomain ?? "—"}
                       </td>
                       <td className="num">
@@ -146,22 +146,22 @@ export default function AuditLogsPage() {
             {detail ? (
               <>
                 <KV k="Entry ID">
-                  <span className="mono" style={{ fontSize: 12 }}>
+                  <span className="mono fs-mono-sm">
                     {detail.id}
                   </span>
                 </KV>
                 <KV k="Transaction">
-                  <span className="mono" style={{ fontSize: 12 }}>
+                  <span className="mono fs-mono-sm">
                     {shortId(detail.transactionId ?? "—", 12, 5)}
                   </span>
                 </KV>
                 <KV k="Payload hash">
-                  <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
+                  <span className="mono fs-mono-xs" style={{ wordBreak: "break-all" }}>
                     {detail.payloadHash}
                   </span>
                 </KV>
                 <KV k="Previous hash">
-                  <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
+                  <span className="mono fs-mono-xs" style={{ wordBreak: "break-all" }}>
                     {detail.prevHash ?? "— genesis —"}
                   </span>
                 </KV>
@@ -172,13 +172,13 @@ export default function AuditLogsPage() {
             )}
 
             <div
+              className="fs-body-sm"
               style={{
                 marginTop: 16,
                 padding: "14px 16px",
                 borderRadius: "var(--r)",
                 background: "var(--tint)",
                 border: "1px solid var(--line)",
-                fontSize: 13,
                 color: "var(--ink-2)",
                 lineHeight: 1.6,
               }}
