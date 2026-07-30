@@ -184,6 +184,14 @@ function LoginForm() {
               Demo1234!
             </code>
           </div>
+
+          <p className="lg-note">
+            <Icon name="warn" style={{ width: 14, height: 14, flex: "none" }} />
+            <span>
+              If the first attempt does not go through, reload the page and sign in
+              again — the session sometimes needs a moment to start.
+            </span>
+          </p>
         </div>
       </section>
 

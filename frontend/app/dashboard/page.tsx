@@ -17,15 +17,8 @@ import {
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
 import { apiSend } from "@/lib/api";
-import {
-  ago,
-  decisionLabel,
-  decisionTagClass,
-  money,
-  num,
-  pct,
-  shortId,
-} from "@/lib/format";
+import { ago, decisionLabel, decisionTagClass, num, pct, shortId } from "@/lib/format";
+import { useMoney } from "@/lib/currency";
 import type {
   Agent,
   Approval,
@@ -41,6 +34,7 @@ import toast from "react-hot-toast";
 const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function DashboardPage() {
+  const money = useMoney();
   const ov = useApi<Overview>("/v1/analytics/overview");
   const tr = useApi<SpendingTrends>("/v1/analytics/spending-trends", { days: 7 });
   const sd = useApi<StatusDistribution>("/v1/analytics/status-distribution");
@@ -359,7 +353,7 @@ export default function DashboardPage() {
                       <b>{t.agentName}</b>
                       <div className="sub mono">{shortId(t.id)}</div>
                     </td>
-                    <td className="mono fs-mono-base">
+                    <td className="mono" style={{ fontSize: 12.5 }}>
                       {t.merchantDomain}
                     </td>
                     <td className="num">
@@ -373,7 +367,7 @@ export default function DashboardPage() {
                         {decisionLabel(t.decision)}
                       </span>
                     </td>
-                    <td className="fs-meta" style={{ whiteSpace: "nowrap" }}>
+                    <td style={{ color: "var(--ink-3)", fontSize: 12.5, whiteSpace: "nowrap" }}>
                       {ago(t.createdAt)}
                     </td>
                   </tr>
@@ -409,8 +403,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div
-                    className="fs-body-sm"
-                    style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}
+                    style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginTop: 4 }}
                   >
                     <span style={{ color: "var(--ink-3)", fontWeight: 600 }}>
                       Total spent
@@ -422,7 +415,7 @@ export default function DashboardPage() {
                   <div className={`prog ${cls}`}>
                     <i style={{ width: `${p100}%` }} />
                   </div>
-                  <p className="fs-caption" style={{ marginTop: 9 }}>
+                  <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 9 }}>
                     {a.totalTx} decisions · resets 00:00 UTC (5:30 AM IST)
                   </p>
                 </CardBody>
@@ -452,7 +445,7 @@ export default function DashboardPage() {
                 label="Global kill switch"
               />
             </div>
-            <p className="fs-caption" style={{ marginTop: 10 }}>
+            <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 10 }}>
               Currently{" "}
               <b style={{ color: killOn ? "var(--bad)" : "var(--ok)" }}>
                 {killOn ? "active" : "inactive"}

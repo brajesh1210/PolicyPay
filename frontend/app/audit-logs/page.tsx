@@ -15,13 +15,15 @@ import {
   Terminal,
 } from "@/components/ui";
 import { useApiList } from "@/lib/hooks";
-import { istDateTime, istTime, money, shortId } from "@/lib/format";
+import { istDateTime, istTime, shortId } from "@/lib/format";
+import { useMoney } from "@/lib/currency";
 import type { AuditLog } from "@/lib/types";
 import toast from "react-hot-toast";
 
 const LIMIT = 10;
 
 export default function AuditLogsPage() {
+  const money = useMoney();
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<AuditLog | null>(null);
 
@@ -84,15 +86,15 @@ export default function AuditLogsPage() {
                   {rows.map((l) => (
                     <tr key={l.id}>
                       <td
-                        className="mono fs-mono-sm"
-                        style={{ color: "var(--ink-3)", whiteSpace: "nowrap" }}
+                        className="mono"
+                        style={{ fontSize: 12, color: "var(--ink-3)", whiteSpace: "nowrap" }}
                       >
                         {istTime(l.createdAt)}
                       </td>
-                      <td className="fs-body-sm">
+                      <td style={{ fontSize: 13 }}>
                         <b>{l.transaction?.agent?.name ?? "—"}</b>
                       </td>
-                      <td className="mono fs-mono-base">
+                      <td className="mono" style={{ fontSize: 12.5 }}>
                         {l.transaction?.merchantDomain ?? "—"}
                       </td>
                       <td className="num">
@@ -146,22 +148,22 @@ export default function AuditLogsPage() {
             {detail ? (
               <>
                 <KV k="Entry ID">
-                  <span className="mono fs-mono-sm">
+                  <span className="mono" style={{ fontSize: 12 }}>
                     {detail.id}
                   </span>
                 </KV>
                 <KV k="Transaction">
-                  <span className="mono fs-mono-sm">
+                  <span className="mono" style={{ fontSize: 12 }}>
                     {shortId(detail.transactionId ?? "—", 12, 5)}
                   </span>
                 </KV>
                 <KV k="Payload hash">
-                  <span className="mono fs-mono-xs" style={{ wordBreak: "break-all" }}>
+                  <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
                     {detail.payloadHash}
                   </span>
                 </KV>
                 <KV k="Previous hash">
-                  <span className="mono fs-mono-xs" style={{ wordBreak: "break-all" }}>
+                  <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
                     {detail.prevHash ?? "— genesis —"}
                   </span>
                 </KV>
@@ -172,13 +174,13 @@ export default function AuditLogsPage() {
             )}
 
             <div
-              className="fs-body-sm"
               style={{
                 marginTop: 16,
                 padding: "14px 16px",
                 borderRadius: "var(--r)",
                 background: "var(--tint)",
                 border: "1px solid var(--line)",
+                fontSize: 13,
                 color: "var(--ink-2)",
                 lineHeight: 1.6,
               }}

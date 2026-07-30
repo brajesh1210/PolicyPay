@@ -18,7 +18,8 @@ import {
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
 import { apiSend } from "@/lib/api";
-import { ago, istDateTime, money, shortId } from "@/lib/format";
+import { ago, istDateTime, shortId } from "@/lib/format";
+import { useMoney } from "@/lib/currency";
 import type { Approval } from "@/lib/types";
 import toast from "react-hot-toast";
 
@@ -29,6 +30,7 @@ function toneFor(s: string): "ok" | "no" | "hold" {
 }
 
 export default function ApprovalsPage() {
+  const money = useMoney();
   const { data, loading, error, reload } = useApi<Approval[]>("/v1/approvals");
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -112,7 +114,7 @@ export default function ApprovalsPage() {
                         {tx?.purpose ? <KV k="Purpose">{tx.purpose}</KV> : null}
                         <KV k="Expires">{istDateTime(a.expiresAt)} IST</KV>
                         <KV k="Approval ID">
-                          <span className="mono fs-mono-sm">
+                          <span className="mono" style={{ fontSize: 12 }}>
                             {a.id}
                           </span>
                         </KV>

@@ -16,9 +16,10 @@ import {
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
 import { apiSend } from "@/lib/api";
-import { money } from "@/lib/format";
+
 import type { Policy } from "@/lib/types";
 import toast from "react-hot-toast";
+import { useCurrency } from "@/lib/currency";
 
 const BLURB: Record<string, string> = {
   CONSERVATIVE: "Tight caps and a narrow window. Good for a new agent you do not trust yet.",
@@ -53,6 +54,7 @@ function toDraft(p: Policy): Draft {
 }
 
 export default function PoliciesPage() {
+  const { money, currency } = useCurrency();
   const { data, loading, error, reload } = useApi<Policy[]>("/v1/policies");
   const policies = Array.isArray(data) ? data : [];
 
@@ -113,7 +115,7 @@ export default function PoliciesPage() {
   return (
     <AppShell title="Policies" sub="The rulebook every agent lives inside">
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
-        <p className="fs-body" style={{ color: "var(--ink-2)", maxWidth: 600 }}>
+        <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: 600 }}>
           A policy is the rulebook one or more agents live inside. Change it here and every
           agent on it follows the new limits from the next request onward.
         </p>
@@ -151,7 +153,7 @@ export default function PoliciesPage() {
                 }
               />
               <CardBody>
-                <p className="fs-body" style={{ color: "var(--ink-2)", lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.6 }}>
                   {BLURB[p.template] ?? "Custom policy."}
                 </p>
 
@@ -177,13 +179,13 @@ export default function PoliciesPage() {
                           fontSize: 10.5,
                           fontWeight: 800,
                           letterSpacing: ".8px",
-                          textTransform: "uppercase" as const,
+                          textTransform: "uppercase",
                           color: "var(--ink-3)",
                         }}
                       >
                         {k}
                       </span>
-                      <b className="tabnum" style={{ display: "block", fontSize: 18, fontWeight: 800, marginTop: 3 }}>
+                      <b style={{ display: "block", fontSize: 18, fontWeight: 800, marginTop: 3 }}>
                         {v}
                       </b>
                     </div>
@@ -225,7 +227,11 @@ export default function PoliciesPage() {
           />
           <CardBody>
             <div className="grid3">
-              <Field label="Per transaction (USD)" htmlFor="p1">
+              <Field
+                label="Per transaction (USD)"
+                htmlFor="p1"
+                hint={currency === "INR" ? `= ${money(Number(draft.perTxLimitUsd) || 0)}` : undefined}
+              >
                 <input
                   className="in"
                   id="p1"
@@ -235,7 +241,11 @@ export default function PoliciesPage() {
                   onChange={(e) => set("perTxLimitUsd", e.target.value)}
                 />
               </Field>
-              <Field label="Per day (USD)" htmlFor="p2">
+              <Field
+                label="Per day (USD)"
+                htmlFor="p2"
+                hint={currency === "INR" ? `= ${money(Number(draft.dailyBudgetUsd) || 0)}` : undefined}
+              >
                 <input
                   className="in"
                   id="p2"
@@ -245,7 +255,11 @@ export default function PoliciesPage() {
                   onChange={(e) => set("dailyBudgetUsd", e.target.value)}
                 />
               </Field>
-              <Field label="Per month (USD)" htmlFor="p3">
+              <Field
+                label="Per month (USD)"
+                htmlFor="p3"
+                hint={currency === "INR" ? `= ${money(Number(draft.monthlyBudgetUsd) || 0)}` : undefined}
+              >
                 <input
                   className="in"
                   id="p3"

@@ -19,21 +19,15 @@ import {
   TimelineItem,
 } from "@/components/ui";
 import { useApi, useApiList } from "@/lib/hooks";
-import {
-  ago,
-  decisionLabel,
-  decisionTagClass,
-  humanizeCode,
-  istTime,
-  money,
-  shortId,
-} from "@/lib/format";
+import { ago, decisionLabel, decisionTagClass, humanizeCode, istTime, shortId } from "@/lib/format";
+import { useMoney } from "@/lib/currency";
 import type { Agent, Transaction } from "@/lib/types";
 
 const LIMIT = 10;
 type StatusFilter = "" | "ALLOW" | "DENY" | "REQUIRE_APPROVAL";
 
 export default function TransactionsPage() {
+  const money = useMoney();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<StatusFilter>("");
   const [agentId, setAgentId] = useState("");
@@ -101,8 +95,8 @@ export default function TransactionsPage() {
               ]}
             />
             <select
-              className="in fs-sm"
-              style={{ width: "auto", height: 34, padding: "0 34px 0 12px" }}
+              className="in"
+              style={{ width: "auto", height: 34, fontSize: 12.5, padding: "0 34px 0 12px" }}
               aria-label="Filter by agent"
               value={agentId}
               onChange={(e) => changeFilter(() => setAgentId(e.target.value))}
@@ -147,13 +141,13 @@ export default function TransactionsPage() {
                 <tbody>
                   {rows.map((t) => (
                     <tr key={t.id}>
-                      <td className="mono fs-mono-sm" style={{ color: "var(--ink-3)" }}>
+                      <td className="mono" style={{ fontSize: 12, color: "var(--ink-3)" }}>
                         {shortId(t.id)}
                       </td>
                       <td>
                         <b>{t.agent?.name ?? shortId(t.agentId, 6, 3)}</b>
                       </td>
-                      <td className="mono fs-mono-base">
+                      <td className="mono" style={{ fontSize: 12.5 }}>
                         {t.merchantDomain}
                         {t.purpose ? (
                           <div
@@ -180,7 +174,7 @@ export default function TransactionsPage() {
                           {decisionLabel(t.decision)}
                         </span>
                       </td>
-                      <td className="fs-meta" style={{ whiteSpace: "nowrap" }}>
+                      <td style={{ color: "var(--ink-3)", fontSize: 12.5, whiteSpace: "nowrap" }}>
                         {ago(t.createdAt)}
                       </td>
                       <td>
@@ -258,7 +252,7 @@ export default function TransactionsPage() {
               </KV>
               {detail.idempotencyKey ? (
                 <KV k="Idempotency key">
-                  <span className="mono fs-mono-sm">
+                  <span className="mono" style={{ fontSize: 12 }}>
                     {shortId(detail.idempotencyKey, 14, 6)}
                   </span>
                 </KV>

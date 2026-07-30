@@ -476,3 +476,10 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
   font-size:12px;font-weight:600;color:var(--ink-3)}
 .or-line::before,.or-line::after{content:'';flex:1;height:1px;background:var(--line)}
 .err-msg span{flex:1;min-width:0}
+.err-msg span{flex:1;min-width:0}
+
+/* ── login: reload hint ───────────────────── */
+.lg-note{display:flex;align-items:flex-start;gap:8px;margin-top:14px;
+  font-size:12px;line-height:1.55;color:var(--ink-3)}
+.lg-note svg{margin-top:2px;stroke:var(--warn)}
+

@@ -16,6 +16,7 @@ import {
 import { useApi } from "@/lib/hooks";
 import { apiSend } from "@/lib/api";
 import { decisionLabel, decisionTagClass, humanizeCode } from "@/lib/format";
+import { useCurrency } from "@/lib/currency";
 import type { Agent, Merchant, SimulateResult } from "@/lib/types";
 import toast from "react-hot-toast";
 
@@ -72,6 +73,7 @@ const SCENARIOS: Scenario[] = [
 ];
 
 export default function SimulationPage() {
+  const { money, currency, rate } = useCurrency();
   const agents = useApi<Agent[]>("/v1/agents");
   const merchants = useApi<Merchant[]>("/v1/merchants");
 
@@ -173,7 +175,11 @@ export default function SimulationPage() {
               <Field
                 label="Amount (USD)"
                 htmlFor="s3"
-                hint="Compared against this agent's last 20 allowed payments."
+                hint={
+                  currency === "INR"
+                    ? `Entered in USD — that is ${money(Number(amount) || 0)} at ₹${rate}. Compared against this agent's last 20 allowed payments.`
+                    : "Compared against this agent's last 20 allowed payments."
+                }
               >
                 <input
                   className="in"
@@ -344,11 +350,11 @@ export default function SimulationPage() {
             </thead>
             <tbody>
               {[
-                ["1", "A normal payment", "Trusted merchant, small amount", "research-bot-1", "$2.50", "ALLOW", "t-ok"],
-                ["2", "An unapproved merchant", "Not on the merchant list", "research-bot-1", "$5.00", "DENY", "t-no"],
-                ["3", "A prompt injection attempt", "Purpose text tries to hijack the agent", "research-bot-1", "$2.50", "DENY", "t-no"],
-                ["4", "A large payment needs a human", "9× this agent's normal spend", "highvalue-bot-1", "$45.00", "APPROVAL", "t-hold"],
-                ["5", "The daily budget runs out", "Four go through, the fifth is stopped", "research-bot-1", "$4.00 ×5", "DENY", "t-no"],
+                ["1", "A normal payment", "Trusted merchant, small amount", "research-bot-1", money(2.5), "ALLOW", "t-ok"],
+                ["2", "An unapproved merchant", "Not on the merchant list", "research-bot-1", money(5), "DENY", "t-no"],
+                ["3", "A prompt injection attempt", "Purpose text tries to hijack the agent", "research-bot-1", money(2.5), "DENY", "t-no"],
+                ["4", "A large payment needs a human", "9× this agent's normal spend", "highvalue-bot-1", money(45), "APPROVAL", "t-hold"],
+                ["5", "The daily budget runs out", "Four go through, the fifth is stopped", "research-bot-1", money(4) + " ×5", "DENY", "t-no"],
               ].map((r, i) => (
                 <tr key={r[0]}>
                   <td className="num">{r[0]}</td>

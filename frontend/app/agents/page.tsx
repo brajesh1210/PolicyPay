@@ -17,13 +17,15 @@ import {
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
 import { apiSend } from "@/lib/api";
-import { ago, money, pct, shortId } from "@/lib/format";
+import { ago, pct, shortId } from "@/lib/format";
+import { useMoney } from "@/lib/currency";
 import type { Agent, Policy } from "@/lib/types";
 import toast from "react-hot-toast";
 
 type Filter = "all" | "ACTIVE" | "PAUSED";
 
 export default function AgentsPage() {
+  const money = useMoney();
   const { data, loading, error, reload } = useApi<Agent[]>("/v1/agents");
   const pol = useApi<Policy[]>("/v1/policies");
 
@@ -171,7 +173,7 @@ export default function AgentsPage() {
                 </div>
 
                 <div style={{ marginTop: 16 }}>
-                  <div className="fs-meta" style={{ display: "flex", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5 }}>
                     <span style={{ color: "var(--ink-3)", fontWeight: 600 }}>Total spent</span>
                     <b className="num">
                       {money(a.totalSpent)} / {money(cap)}
@@ -193,13 +195,14 @@ export default function AgentsPage() {
                   </div>
                   <div>
                     <span>Last seen</span>
-                    <b className="fs-body-sm">{ago(a.lastActiveAt)}</b>
+                    <b style={{ fontSize: 13 }}>{ago(a.lastActiveAt)}</b>
                   </div>
                   <div>
                     <span>Kill switch</span>
                     <b
                       style={{
                         color: a.killSwitchActive ? "var(--bad)" : "var(--ok)",
+                        fontSize: 13,
                       }}
                     >
                       {a.killSwitchActive ? "On" : "Off"}

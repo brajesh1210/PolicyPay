@@ -17,7 +17,8 @@ import {
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
 import { apiSend, API_BASE } from "@/lib/api";
-import { ago, money } from "@/lib/format";
+import { ago } from "@/lib/format";
+import { useCurrency } from "@/lib/currency";
 import type { Agent } from "@/lib/types";
 import toast from "react-hot-toast";
 
@@ -29,6 +30,7 @@ function initials(name?: string | null, email?: string | null) {
 }
 
 export default function SettingsPage() {
+  const { money, currency, setCurrency, rate } = useCurrency();
   const { data: session } = useSession();
   const ks = useApi<{ active: boolean }>("/v1/kill-switch");
   const agents = useApi<Agent[]>("/v1/agents");
@@ -87,14 +89,14 @@ export default function SettingsPage() {
             <CardHeader title="Your account" sub="Signed in as the workspace admin" />
             <CardBody>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-                <span className="av fs-lg" style={{ width: 52, height: 52 }}>
+                <span className="av" style={{ width: 52, height: 52, fontSize: 17 }}>
                   {initials(session?.user?.name, session?.user?.email)}
                 </span>
                 <div>
-                  <b className="fs-title" style={{ display: "block" }}>
+                  <b style={{ fontSize: 15, fontWeight: 800, display: "block" }}>
                     {session?.user?.name ?? "—"}
                   </b>
-                  <span className="fs-body-sm" style={{ color: "var(--ink-3)" }}>
+                  <span style={{ fontSize: 13, color: "var(--ink-3)" }}>
                     {session?.user?.email ?? "—"} · {session?.user?.role ?? "USER"}
                   </span>
                 </div>
@@ -126,8 +128,28 @@ export default function SettingsPage() {
                 >
                   <input className="in" id="n3" value="Asia/Kolkata (IST, UTC+5:30)" readOnly disabled />
                 </Field>
-                <Field label="Currency shown" htmlFor="n4">
-                  <input className="in" id="n4" value="USD ($) · settled in USDC" readOnly disabled />
+                <Field
+                  label="Currency shown"
+                  htmlFor="n4"
+                  hint="Display only — every payment is still settled in USDC."
+                >
+                  <select
+                    className="in"
+                    id="n4"
+                    value={currency}
+                    onChange={(e) => {
+                      const c = e.target.value as "USD" | "INR";
+                      setCurrency(c);
+                      toast.success(
+                        c === "INR"
+                          ? `Showing amounts in ₹ at 1 USD = ₹${rate}`
+                          : "Showing amounts in $"
+                      );
+                    }}
+                  >
+                    <option value="USD">USD ($) — settled in USDC</option>
+                    <option value="INR">INR (₹) — converted for display</option>
+                  </select>
                 </Field>
               </div>
             </CardBody>
@@ -196,7 +218,7 @@ export default function SettingsPage() {
                           </span>
                         </td>
                         <td className="num">{money(a.totalSpent)}</td>
-                        <td className="fs-meta">
+                        <td style={{ fontSize: 12.5, color: "var(--ink-3)" }}>
                           {ago(a.lastActiveAt)}
                         </td>
                       </tr>
@@ -233,12 +255,12 @@ export default function SettingsPage() {
               </KV>
               <KV k="x402 network">base-sepolia</KV>
               <KV k="Backend">
-                <span className="mono fs-mono-xs" style={{ wordBreak: "break-all" }}>
+                <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
                   {API_BASE.replace(/^https?:\/\//, "")}
                 </span>
               </KV>
               <KV k="Version">
-                <span className="mono fs-mono-sm">
+                <span className="mono" style={{ fontSize: 12 }}>
                   v1.0.0
                 </span>
               </KV>
@@ -248,7 +270,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader title="Before a live demo" sub="Run these in order" />
             <CardBody>
-              <p className="fs-body-sm" style={{ color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 16 }}>
                 Spend counters live in Redis and only reset at 00:00 UTC. Clear them from the
                 Railway console so all five demo scenarios start from a clean slate:
               </p>
@@ -258,7 +280,7 @@ export default function SettingsPage() {
               >
                 npm run reset:counters --workspace backend
               </div>
-              <p className="fs-meta" style={{ lineHeight: 1.6 }}>
+              <p style={{ fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.6 }}>
                 Then run <b>npm run demo</b> from the demo-agent folder. All five scenarios
                 should pass.
               </p>
