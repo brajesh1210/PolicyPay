@@ -22,9 +22,25 @@ const app = express();
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("dev"));
+// CORS_ORIGIN is a comma-separated list, e.g.
+//   http://localhost:3000,https://policypay.vercel.app
+const allowedOrigins = (env.CORS_ORIGIN || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: env.CORS_ORIGIN,
+    origin(origin, callback) {
+      // server-to-server calls (curl, the demo agent) send no Origin
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // any Vercel preview deployment
+      if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
   })
 );
@@ -54,7 +70,7 @@ app.use("/v1", v1Router);
 
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
+app.listen(env.PORT, "0.0.0.0", () => {
   console.log(`PolicyPay backend running on http://localhost:${env.PORT}`);
 });
 
