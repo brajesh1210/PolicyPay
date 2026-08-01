@@ -6,7 +6,8 @@
     "backend",
     "frontend",
     "demo-agent",
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "dependencies": {
     "@policypay/contracts": "^1.0.0"

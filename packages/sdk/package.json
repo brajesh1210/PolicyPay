@@ -1,0 +1,46 @@
+{
+  "name": "policypay",
+  "version": "1.0.0",
+  "description": "Spend guard for AI agents. One line before every purchase.",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "policypay": "./bin/cli.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean && tsup src/preload.cts --format cjs --out-dir dist && node -e \"require('fs').renameSync('dist/preload.js','dist/preload.cjs')\"",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai-agents",
+    "spend-control",
+    "policy",
+    "x402",
+    "guardrails",
+    "budget",
+    "llm"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "tsup": "8.3.5",
+    "typescript": "5.5.4",
+    "@types/node": "20.14.10"
+  }
+}
