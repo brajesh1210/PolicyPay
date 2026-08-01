@@ -24,6 +24,7 @@ const NAV: NavGroup[] = [
     group: "Control",
     items: [
       { href: "/agents", label: "Agents", icon: "bot" },
+      { href: "/connect", label: "Connect", icon: "key" },
       { href: "/policies", label: "Policies", icon: "shield" },
       { href: "/merchants", label: "Merchants", icon: "store" },
     ],
