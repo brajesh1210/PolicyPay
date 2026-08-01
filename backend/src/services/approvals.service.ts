@@ -21,10 +21,10 @@ export class ApprovalsService {
     return result.count;
   }
 
-  async list(status?: ApprovalStatus) {
+  async list(userId: string, status?: ApprovalStatus) {
     await this.expireStale();
 
-    const where: Prisma.ApprovalWhereInput = {};
+    const where: Prisma.ApprovalWhereInput = { agent: { userId } };
     if (status) {
       where.status = status;
     }

@@ -10,8 +10,8 @@ export interface CreateMerchantInput {
 }
 
 export class MerchantsService {
-  async list(reputation?: MerchantReputation, search?: string) {
-    const where: Prisma.MerchantWhereInput = {};
+  async list(userId: string, reputation?: MerchantReputation, search?: string) {
+    const where: Prisma.MerchantWhereInput = { userId };
 
     if (reputation) {
       where.reputation = reputation;
@@ -43,9 +43,9 @@ export class MerchantsService {
     return merchant;
   }
 
-  async create(input: CreateMerchantInput) {
+  async create(userId: string, input: CreateMerchantInput) {
     const existing = await prisma.merchant.findUnique({
-      where: { domain: input.domain },
+      where: { userId_domain: { userId, domain: input.domain } },
     });
 
     if (existing) {
@@ -54,6 +54,7 @@ export class MerchantsService {
 
     return prisma.merchant.create({
       data: {
+        userId,
         name: input.name,
         domain: input.domain,
         category: input.category,

@@ -64,6 +64,9 @@ model User {
   email     String   @unique
   password  String?
   role      Role     @default(ADMIN)
+  agents    Agent[]
+  policies  Policy[]
+  merchants Merchant[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -76,6 +79,8 @@ model GlobalConfig {
 
 model Policy {
   id                     String          @id @default(cuid())
+  userId                 String
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   name                   String
   template               PolicyTemplate  @default(CUSTOM)
   enabled                Boolean         @default(true)
@@ -94,11 +99,15 @@ model Policy {
   agents                 Agent[]
   createdAt              DateTime        @default(now())
   updatedAt              DateTime        @updatedAt
+
+  @@index([userId])
 }
 
 model Agent {
   id               String        @id @default(cuid())
-  name             String        @unique
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
   description      String?
   status           AgentStatus   @default(ACTIVE)
   killSwitchActive Boolean       @default(false)
@@ -111,10 +120,13 @@ model Agent {
   apiKeys          ApiKey[]
   transactions     Transaction[]
   approvals        Approval[]
+  alerts           Alert[]
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
+  @@unique([userId, name])
   @@index([status])
+  @@index([userId])
 }
 
 model ApiKey {
@@ -133,12 +145,17 @@ model ApiKey {
 
 model Merchant {
   id         String               @id @default(cuid())
+  userId     String
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String
-  domain     String               @unique
+  domain     String
   category   String
   reputation MerchantReputation   @default(UNKNOWN)
   createdAt  DateTime             @default(now())
   updatedAt  DateTime             @updatedAt
+
+  @@unique([userId, domain])
+  @@index([userId])
 }
 
 model Transaction {
@@ -200,6 +217,7 @@ model Alert {
   title         String
   description   String
   agentId       String?
+  agent         Agent?         @relation(fields: [agentId], references: [id], onDelete: Cascade)
   isRead        Boolean        @default(false)
   isDismissed   Boolean        @default(false)
   createdAt     DateTime       @default(now())

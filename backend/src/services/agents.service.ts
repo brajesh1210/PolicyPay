@@ -20,8 +20,8 @@ export interface UpdateAgentInput {
 }
 
 export class AgentsService {
-  async list(status?: AgentStatus, search?: string) {
-    const where: Prisma.AgentWhereInput = {};
+  async list(userId: string, status?: AgentStatus, search?: string) {
+    const where: Prisma.AgentWhereInput = { userId };
 
     if (status) {
       where.status = status;
@@ -63,9 +63,9 @@ export class AgentsService {
     return agent;
   }
 
-  async create(input: CreateAgentInput) {
-    const policyExists = await prisma.policy.findUnique({
-      where: { id: input.policyId },
+  async create(userId: string, input: CreateAgentInput) {
+    const policyExists = await prisma.policy.findFirst({
+      where: { id: input.policyId, userId },
     });
 
     if (!policyExists) {
@@ -74,6 +74,7 @@ export class AgentsService {
 
     return prisma.agent.create({
       data: {
+        userId,
         name: input.name,
         description: input.description || null,
         policyId: input.policyId,

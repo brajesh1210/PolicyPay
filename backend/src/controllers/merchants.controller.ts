@@ -3,6 +3,7 @@ import { z } from "zod";
 import { MerchantReputation } from "@prisma/client";
 import { merchantsService } from "../services/merchants.service";
 import { ok } from "../utils/response";
+import { tenantId } from "../utils/tenant";
 import { ValidationError } from "../utils/errors";
 
 const createMerchantSchema = z.object({
@@ -21,7 +22,7 @@ export class MerchantsController {
     try {
       const reputation = req.query.reputation as MerchantReputation | undefined;
       const search = req.query.search as string | undefined;
-      const merchants = await merchantsService.list(reputation, search);
+      const merchants = await merchantsService.list(tenantId(req), reputation, search);
       ok(res, merchants);
     } catch (err) {
       next(err);
@@ -34,7 +35,7 @@ export class MerchantsController {
       if (!parsed.success) {
         throw new ValidationError("Validation failed", parsed.error.format());
       }
-      const merchant = await merchantsService.create(parsed.data);
+      const merchant = await merchantsService.create(tenantId(req), parsed.data);
       ok(res, merchant);
     } catch (err) {
       next(err);

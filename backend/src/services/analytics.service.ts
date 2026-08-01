@@ -10,7 +10,7 @@ function formatDateYyyyMmDd(d: Date): string {
 }
 
 export class AnalyticsService {
-  async getOverview() {
+  async getOverview(userId: string) {
     await approvalsService.expireStale();
 
     const now = new Date();
@@ -29,6 +29,7 @@ export class AnalyticsService {
     ] = await Promise.all([
       prisma.transaction.aggregate({
         where: {
+          agent: { userId },
           decision: TransactionDecision.ALLOW,
           createdAt: { gte: todayStart, lte: todayEnd },
         },
@@ -36,6 +37,7 @@ export class AnalyticsService {
       }),
       prisma.transaction.aggregate({
         where: {
+          agent: { userId },
           decision: TransactionDecision.ALLOW,
           createdAt: { gte: yesterdayStart, lte: yesterdayEnd },
         },
@@ -43,17 +45,20 @@ export class AnalyticsService {
       }),
       prisma.transaction.count({
         where: {
+          agent: { userId },
           decision: TransactionDecision.DENY,
           createdAt: { gte: todayStart, lte: todayEnd },
         },
       }),
       prisma.approval.count({
         where: {
+          agent: { userId },
           status: ApprovalStatus.PENDING,
         },
       }),
       prisma.agent.count({
         where: {
+          userId,
           status: AgentStatus.ACTIVE,
         },
       }),
@@ -77,7 +82,7 @@ export class AnalyticsService {
     };
   }
 
-  async getSpendingTrends(days: number = 7) {
+  async getSpendingTrends(userId: string, days: number = 7) {
     const safeDays = Math.max(1, Math.min(30, days));
     const now = new Date();
 
@@ -95,6 +100,7 @@ export class AnalyticsService {
 
     const transactions = await prisma.transaction.findMany({
       where: {
+          agent: { userId },
         createdAt: { gte: startDate },
       },
       select: {
@@ -127,12 +133,12 @@ export class AnalyticsService {
     return { trends };
   }
 
-  async getStatusDistribution() {
+  async getStatusDistribution(userId: string) {
     const [allowCount, denyCount, requireApprovalCount, totalCount] = await Promise.all([
-      prisma.transaction.count({ where: { decision: TransactionDecision.ALLOW } }),
-      prisma.transaction.count({ where: { decision: TransactionDecision.DENY } }),
-      prisma.transaction.count({ where: { decision: TransactionDecision.REQUIRE_APPROVAL } }),
-      prisma.transaction.count(),
+      prisma.transaction.count({ where: { agent: { userId }, decision: TransactionDecision.ALLOW } }),
+      prisma.transaction.count({ where: { agent: { userId }, decision: TransactionDecision.DENY } }),
+      prisma.transaction.count({ where: { agent: { userId }, decision: TransactionDecision.REQUIRE_APPROVAL } }),
+      prisma.transaction.count({ where: { agent: { userId } } }),
     ]);
 
     return {
@@ -143,7 +149,7 @@ export class AnalyticsService {
     };
   }
 
-  async getRecentTransactions(limit: number = 5) {
+  async getRecentTransactions(userId: string, limit: number = 5) {
     const safeLimit = Math.max(1, Math.min(50, limit));
 
     const transactions = await prisma.transaction.findMany({

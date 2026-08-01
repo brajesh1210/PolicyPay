@@ -41,9 +41,11 @@ export class PolicyEngineService {
     const hourCount = await frequencyEngineService.getHourCount(agent.id);
     const dayCount = await frequencyEngineService.getDayCount(agent.id);
 
-    // Lookup merchant by domain
+    // Lookup merchant by domain, inside this agent's workspace only
     const merchantRow = await prisma.merchant.findUnique({
-      where: { domain: body.merchant.domain },
+      where: {
+        userId_domain: { userId: agent.userId, domain: body.merchant.domain },
+      },
     });
 
     const merchantInfo = {

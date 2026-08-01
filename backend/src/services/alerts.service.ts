@@ -116,8 +116,8 @@ export class AlertsService {
     );
   }
 
-  async list(filters: AlertFilterOptions): Promise<Alert[]> {
-    const where: Prisma.AlertWhereInput = {};
+  async list(userId: string, filters: AlertFilterOptions): Promise<Alert[]> {
+    const where: Prisma.AlertWhereInput = { agent: { userId } };
 
     if (filters.is_dismissed !== undefined) {
       where.isDismissed = filters.is_dismissed;
