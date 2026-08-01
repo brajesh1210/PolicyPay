@@ -13,13 +13,13 @@ export interface TransactionFilterOptions {
 }
 
 export class TransactionsService {
-  async list(filters: TransactionFilterOptions) {
+  async list(userId: string, filters: TransactionFilterOptions) {
     const page = Math.max(1, filters.page || 1);
     const rawLimit = filters.limit || 20;
     const limit = Math.min(100, Math.max(1, rawLimit));
     const skip = (page - 1) * limit;
 
-    const where: Prisma.TransactionWhereInput = {};
+    const where: Prisma.TransactionWhereInput = { agent: { userId } };
 
     if (filters.decision) {
       where.decision = filters.decision;

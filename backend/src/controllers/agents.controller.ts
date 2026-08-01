@@ -3,6 +3,7 @@ import { z } from "zod";
 import { AgentStatus } from "@prisma/client";
 import { agentsService } from "../services/agents.service";
 import { ok } from "../utils/response";
+import { tenantId } from "../utils/tenant";
 import { ValidationError } from "../utils/errors";
 
 const createAgentSchema = z.object({
@@ -32,7 +33,7 @@ export class AgentsController {
     try {
       const status = req.query.status as AgentStatus | undefined;
       const search = req.query.search as string | undefined;
-      const agents = await agentsService.list(status, search);
+      const agents = await agentsService.list(tenantId(req), status, search);
       ok(res, agents);
     } catch (err) {
       next(err);
@@ -55,7 +56,7 @@ export class AgentsController {
       if (!parsed.success) {
         throw new ValidationError("Validation failed", parsed.error.format());
       }
-      const agent = await agentsService.create(parsed.data);
+      const agent = await agentsService.create(tenantId(req), parsed.data);
       ok(res, agent);
     } catch (err) {
       next(err);

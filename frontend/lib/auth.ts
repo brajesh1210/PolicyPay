@@ -1,22 +1,28 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import jwt from "jsonwebtoken";
-
 const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "https://policypay-production.up.railway.app"
 ).replace(/\/$/, "");
 
-const API_JWT_SECRET =
-  process.env.API_JWT_SECRET || "policypay-dev-secret-change-me";
-
 /**
- * Google sign-in mints a backend token locally, signed with the same secret
- * the backend verifies with. The backend trusts any correctly signed token,
- * so a Google user does not need a row in the users table.
+ * Google sign-in exchanges the verified email for a real backend account.
+ * The backend creates the user and their workspace on first sign-in, so a
+ * Google user owns agents and policies just like a password user does.
  */
-function mintApiToken(userId: string, email: string, role = "ADMIN") {
-  return jwt.sign({ userId, email, role }, API_JWT_SECRET, { expiresIn: "24h" });
+async function exchangeGoogleForApiToken(email: string, name?: string | null) {
+  const res = await fetch(`${API_URL}/v1/auth/oauth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, name: name ?? undefined }),
+  });
+  const json: any = await res.json().catch(() => null);
+  if (!res.ok || json?.success !== true || !json.data?.apiToken) {
+    console.error("[auth] google exchange failed:", res.status, json?.error?.message);
+    return null;
+  }
+  return { userId: json.data.user.id as string, apiToken: json.data.apiToken as string,
+           role: json.data.user.role as string };
 }
 
 const providers: NextAuthOptions["providers"] = [
@@ -96,12 +102,14 @@ export const authOptions: NextAuthOptions = {
         token.apiToken = (user as any).apiToken;
       }
 
-      // Google login — mint one ourselves.
-      if (account?.provider === "google" && !token.apiToken) {
-        const email = token.email || "unknown@google";
-        token.userId = "google:" + email;
-        token.role = "ADMIN";
-        token.apiToken = mintApiToken(token.userId as string, email as string);
+      // Google login — swap the verified email for a real backend account.
+      if (account?.provider === "google" && !token.apiToken && token.email) {
+        const res = await exchangeGoogleForApiToken(token.email, token.name);
+        if (res) {
+          token.userId = res.userId;
+          token.role = res.role;
+          token.apiToken = res.apiToken;
+        }
       }
 
       return token;

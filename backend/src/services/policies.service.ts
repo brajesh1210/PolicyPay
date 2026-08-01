@@ -81,8 +81,9 @@ export interface UpdatePolicyInput {
 }
 
 export class PoliciesService {
-  async list() {
+  async list(userId: string) {
     return prisma.policy.findMany({
+      where: { userId },
       include: {
         _count: {
           select: {
@@ -119,9 +120,10 @@ export class PoliciesService {
     return policy;
   }
 
-  async createCustom(input: CreatePolicyInput) {
+  async createCustom(userId: string, input: CreatePolicyInput) {
     return prisma.policy.create({
       data: {
+        userId,
         ...input,
         template: PolicyTemplate.CUSTOM,
         blockUnknownMerchants: input.blockUnknownMerchants ?? true,
@@ -131,7 +133,7 @@ export class PoliciesService {
     });
   }
 
-  async createFromTemplate(templateName: "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE", customName?: string) {
+  async createFromTemplate(userId: string, templateName: "CONSERVATIVE" | "MODERATE" | "AGGRESSIVE", customName?: string) {
     const tmpl = POLICY_TEMPLATES[templateName];
     if (!tmpl) {
       throw new NotFoundError("Template not found");
@@ -139,6 +141,7 @@ export class PoliciesService {
 
     return prisma.policy.create({
       data: {
+        userId,
         template: tmpl.template,
         name: customName || tmpl.name,
         perTxLimitUsd: tmpl.perTxLimitUsd,

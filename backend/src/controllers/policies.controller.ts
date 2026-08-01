@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { policiesService } from "../services/policies.service";
 import { ok } from "../utils/response";
+import { tenantId } from "../utils/tenant";
 import { ValidationError } from "../utils/errors";
 
 const createCustomPolicySchema = z.object({
@@ -32,7 +33,7 @@ const fromTemplateSchema = z.object({
 export class PoliciesController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const policies = await policiesService.list();
+      const policies = await policiesService.list(tenantId(req));
       ok(res, policies);
     } catch (err) {
       next(err);
@@ -64,7 +65,7 @@ export class PoliciesController {
       if (!parsed.success) {
         throw new ValidationError("Validation failed", parsed.error.format());
       }
-      const policy = await policiesService.createCustom(parsed.data);
+      const policy = await policiesService.createCustom(tenantId(req), parsed.data);
       ok(res, policy);
     } catch (err) {
       next(err);
@@ -77,7 +78,7 @@ export class PoliciesController {
       if (!parsed.success) {
         throw new ValidationError("Validation failed", parsed.error.format());
       }
-      const policy = await policiesService.createFromTemplate(
+      const policy = await policiesService.createFromTemplate(tenantId(req), 
         parsed.data.template,
         parsed.data.name
       );

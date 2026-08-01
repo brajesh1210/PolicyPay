@@ -15,6 +15,11 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const oauthSchema = z.object({
+  email: z.string().email(),
+  name: z.string().optional(),
+});
+
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -26,6 +31,25 @@ export class AuthController {
       const { name, email, password } = parsed.data;
       const user = await authService.register(name, email, password);
       ok(res, user);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * Called by the frontend after Google verifies the user. Creates the
+   * account and its workspace on first sign-in, then hands back the same
+   * token shape as a password login.
+   */
+  async oauth(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const parsed = oauthSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new ValidationError("Validation failed", parsed.error.format());
+      }
+      const { email, name } = parsed.data;
+      const result = await authService.findOrCreateOAuthUser(email, name ?? "");
+      ok(res, result);
     } catch (err) {
       next(err);
     }

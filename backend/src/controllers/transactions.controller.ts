@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { TransactionDecision } from "@prisma/client";
 import { transactionsService } from "../services/transactions.service";
 import { ok } from "../utils/response";
+import { tenantId } from "../utils/tenant";
 
 export class TransactionsController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -19,7 +20,7 @@ export class TransactionsController {
       const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
 
-      const result = await transactionsService.list({
+      const result = await transactionsService.list(tenantId(req), {
         decision,
         agentId,
         merchant,

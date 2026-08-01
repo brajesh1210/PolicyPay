@@ -41,11 +41,12 @@ export class AuditLogService {
     });
   }
 
-  async list(page: number = 1, limit: number = 20) {
+  async list(userId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
 
     const [logs, total] = await Promise.all([
       prisma.auditLog.findMany({
+        where: { transaction: { agent: { userId } } },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
@@ -63,7 +64,7 @@ export class AuditLogService {
           },
         },
       }),
-      prisma.auditLog.count(),
+      prisma.auditLog.count({ where: { transaction: { agent: { userId } } } }),
     ]);
 
     return {

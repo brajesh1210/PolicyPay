@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import {
   PrismaClient,
   Role,
@@ -82,6 +85,7 @@ async function main() {
   console.log("📋 Seeding Policies...");
   const conservativePolicy = await prisma.policy.create({
     data: {
+      userId: adminUser.id,
       name: "Conservative",
       template: PolicyTemplate.CONSERVATIVE,
       perTxLimitUsd: 5,
@@ -99,6 +103,7 @@ async function main() {
 
   const moderatePolicy = await prisma.policy.create({
     data: {
+      userId: adminUser.id,
       name: "Moderate",
       template: PolicyTemplate.MODERATE,
       perTxLimitUsd: 25,
@@ -116,6 +121,7 @@ async function main() {
 
   const aggressivePolicy = await prisma.policy.create({
     data: {
+      userId: adminUser.id,
       name: "Aggressive",
       template: PolicyTemplate.AGGRESSIVE,
       perTxLimitUsd: 100,
@@ -137,6 +143,7 @@ async function main() {
   console.log("🤖 Seeding Agents...");
   const agentA = await prisma.agent.create({
     data: {
+      userId: adminUser.id,
       name: "research-bot-1",
       description: "Buys market data",
       policyId: conservativePolicy.id,
@@ -148,6 +155,7 @@ async function main() {
 
   const agentB = await prisma.agent.create({
     data: {
+      userId: adminUser.id,
       name: "highvalue-bot-1",
       description: "Bulk data purchases",
       policyId: aggressivePolicy.id,
@@ -163,6 +171,7 @@ async function main() {
   console.log("🏪 Seeding Merchants...");
   await prisma.merchant.create({
     data: {
+      userId: adminUser.id,
       name: "Trusted API",
       domain: "trusted-api.com",
       category: "api",
@@ -172,6 +181,7 @@ async function main() {
 
   await prisma.merchant.create({
     data: {
+      userId: adminUser.id,
       name: "Data Provider",
       domain: "data-provider.xyz",
       category: "data",
@@ -181,6 +191,7 @@ async function main() {
 
   await prisma.merchant.create({
     data: {
+      userId: adminUser.id,
       name: "Unknown Service",
       domain: "unknown-service.xyz",
       category: "api",
@@ -190,6 +201,7 @@ async function main() {
 
   await prisma.merchant.create({
     data: {
+      userId: adminUser.id,
       name: "Shady Payments",
       domain: "shady-payments.com",
       category: "misc",

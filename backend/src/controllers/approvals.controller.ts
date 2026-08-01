@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ApprovalStatus } from "@prisma/client";
 import { approvalsService } from "../services/approvals.service";
 import { ok } from "../utils/response";
+import { tenantId } from "../utils/tenant";
 import { ValidationError } from "../utils/errors";
 
 const actionBodySchema = z.object({
@@ -13,7 +14,7 @@ export class ApprovalsController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const status = req.query.status as ApprovalStatus | undefined;
-      const approvals = await approvalsService.list(status);
+      const approvals = await approvalsService.list(tenantId(req), status);
       ok(res, approvals);
     } catch (err) {
       next(err);

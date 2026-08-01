@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AlertSeverity } from "@prisma/client";
 import { alertsService } from "../services/alerts.service";
 import { ok } from "../utils/response";
+import { tenantId } from "../utils/tenant";
 
 export class AlertsController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -22,7 +23,7 @@ export class AlertsController {
         severity = req.query.severity as AlertSeverity;
       }
 
-      const alerts = await alertsService.list({ is_dismissed, severity });
+      const alerts = await alertsService.list(tenantId(req), { is_dismissed, severity });
       ok(res, alerts);
     } catch (err) {
       next(err);
