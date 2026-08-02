@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./frontend/public/logo.png" alt="PolicyPay Logo" width="250" />
+  <img src="./frontend/public/logo.png" alt="PolicyPay Logo" width="100" />
 </p>
 
 <div align="center">
