@@ -105,7 +105,7 @@ export default function SettingsPage() {
                   sm
                   icon="logout"
                   style={{ marginLeft: "auto" }}
-                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  onClick={() => signOut({ callbackUrl: "/landing" })}
                 >
                   Sign out
                 </Button>

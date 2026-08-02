@@ -10,6 +10,7 @@ export const config = {
     "/transactions/:path*",
     "/approvals/:path*",
     "/agents/:path*",
+    "/connect/:path*",
     "/policies/:path*",
     "/merchants/:path*",
     "/alerts/:path*",

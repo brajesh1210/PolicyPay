@@ -95,8 +95,8 @@ async function main() {
       maxTxPerDay: 100,
       approvalThresholdScore: 30,
       denyThresholdScore: 70,
-      allowedHoursStart: "08:00",
-      allowedHoursEnd: "20:00",
+      allowedHoursStart: null,
+      allowedHoursEnd: null,
       blockUnknownMerchants: true,
     },
   });
@@ -113,8 +113,8 @@ async function main() {
       maxTxPerDay: 200,
       approvalThresholdScore: 40,
       denyThresholdScore: 80,
-      allowedHoursStart: "06:00",
-      allowedHoursEnd: "22:00",
+      allowedHoursStart: null,
+      allowedHoursEnd: null,
       blockUnknownMerchants: true,
     },
   });

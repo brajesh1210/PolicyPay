@@ -195,11 +195,6 @@ export default function PoliciesPage() {
                 <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
                   <KV k="Approval at">risk ≥ {p.approvalThresholdScore}</KV>
                   <KV k="Deny at">risk ≥ {p.denyThresholdScore}</KV>
-                  <KV k="Allowed hours">
-                    {p.allowedHoursStart && p.allowedHoursEnd
-                      ? `${p.allowedHoursStart} – ${p.allowedHoursEnd}`
-                      : "No restriction"}
-                  </KV>
                   <KV k="Unknown merchants">
                     <span style={{ color: p.blockUnknownMerchants ? "var(--bad)" : "var(--ink-3)" }}>
                       {p.blockUnknownMerchants ? "Blocked" : "Allowed"}
@@ -288,23 +283,6 @@ export default function PoliciesPage() {
                   type="number"
                   value={draft.maxTxPerDay}
                   onChange={(e) => set("maxTxPerDay", e.target.value)}
-                />
-              </Field>
-              <Field
-                label="Allowed hours (UTC)"
-                htmlFor="p6"
-                hint="Set on the backend seed — read only here."
-              >
-                <input
-                  className="in"
-                  id="p6"
-                  value={
-                    editing.allowedHoursStart && editing.allowedHoursEnd
-                      ? `${editing.allowedHoursStart} – ${editing.allowedHoursEnd}`
-                      : "No restriction"
-                  }
-                  readOnly
-                  disabled
                 />
               </Field>
             </div>
