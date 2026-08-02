@@ -175,7 +175,7 @@ export default function AppShell({
             <button
               className="icb"
               aria-label="Sign out"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: "/landing" })}
             >
               <Icon name="logout" />
             </button>

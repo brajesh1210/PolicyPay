@@ -109,39 +109,7 @@ export async function calculateRisk(input: CalculateRiskInput): Promise<Calculat
   }
 
   // --------------------------------------------------------------------------
-  // STEP 5 - Off Hours
-  // --------------------------------------------------------------------------
-  if (policy.allowedHoursStart && policy.allowedHoursEnd) {
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    const [startH, startM] = policy.allowedHoursStart.split(":").map(Number);
-    const startMinutes = startH * 60 + startM;
-
-    const [endH, endM] = policy.allowedHoursEnd.split(":").map(Number);
-    const endMinutes = endH * 60 + endM;
-
-    let isOutside = false;
-    if (startMinutes <= endMinutes) {
-      isOutside = currentMinutes < startMinutes || currentMinutes > endMinutes;
-    } else {
-      // Overnight window (e.g. 22:00 to 06:00)
-      isOutside = currentMinutes < startMinutes && currentMinutes > endMinutes;
-    }
-
-    if (isOutside) {
-      const points = 15;
-      totalPoints += points;
-      breakdown.push({
-        factor: "off_hours",
-        points,
-        detail: `Transaction at ${now.toTimeString().slice(0, 5)} outside allowed window ${policy.allowedHoursStart}-${policy.allowedHoursEnd}`,
-      });
-      reasonCodes.push(REASON_CODES.OFF_HOURS);
-    }
-  }
-
-  // --------------------------------------------------------------------------
-  // STEP 6 - Prompt Injection
+  // STEP 5 - Prompt Injection
   // --------------------------------------------------------------------------
   if (injectionFlagged) {
     const points = 80;

@@ -67,13 +67,17 @@ function LoginForm() {
       redirect: false,
     });
 
-    if (res?.ok) {
-      router.push(callbackUrl);
-      router.refresh();
-    } else {
+    if (!res?.ok) {
       setError("That email and password did not match. Try again.");
       setBusy(false);
+      return;
     }
+
+    // router.push() can fire before the session cookie is readable, and the
+    // dashboard then bounces straight back to /login — which is why the
+    // first click used to do nothing. A full navigation guarantees the
+    // cookie is sent with the request for the next page.
+    window.location.assign(callbackUrl);
   }
 
   function onGoogle() {
