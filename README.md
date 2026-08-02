@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./frontend/public/logo.png" alt="PolicyPay Logo" width="250" />
+</p>
+
 <div align="center">
 
 # PolicyPay
