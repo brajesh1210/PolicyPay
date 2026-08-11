@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
+import Icon from "@/components/Icon";
 import {
   Button,
   Card,
@@ -10,7 +11,6 @@ import {
   EmptyState,
   Field,
   KV,
-  RiskGauge,
   Terminal,
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
@@ -70,6 +70,16 @@ const SCENARIOS: Scenario[] = [
     amount: "4.00",
     purpose: "bulk data fetch",
   },
+];
+
+/* the checks the engine runs, in order, with the codes that mean "this one failed" */
+const CHECKS: { label: string; codes: string[] }[] = [
+  { label: "Merchant allowlist", codes: ["MERCHANT_NOT_ALLOWED", "MERCHANT_BLOCKED"] },
+  { label: "Per transaction limit", codes: ["PER_TX_LIMIT"] },
+  { label: "Daily budget", codes: ["DAILY_BUDGET"] },
+  { label: "Monthly budget", codes: ["MONTHLY_BUDGET"] },
+  { label: "Frequency limit", codes: ["HOURLY_FREQUENCY", "DAILY_FREQUENCY"] },
+  { label: "Prompt injection", codes: ["PROMPT_INJECTION"] },
 ];
 
 export default function SimulationPage() {
@@ -255,29 +265,123 @@ export default function SimulationPage() {
                 />
               ) : (
                 <>
-                  <RiskGauge score={result.risk_score} />
-                  <div style={{ marginTop: 18 }}>
-                    {(result.risk_factors ?? []).length > 0 ? (
-                      (result.risk_factors ?? []).map((f, i) => (
+                  <div
+                    className={`verdict-hero ${
+                      result.decision === "ALLOW"
+                        ? "vh-ok"
+                        : result.decision === "DENY"
+                        ? "vh-no"
+                        : "vh-hold"
+                    }`}
+                  >
+                    <Icon
+                      name={
+                        result.decision === "ALLOW"
+                          ? "check"
+                          : result.decision === "DENY"
+                          ? "x"
+                          : "clock"
+                      }
+                    />
+                    <b>{decisionLabel(result.decision)}</b>
+                  </div>
+
+                  <h4
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 800,
+                      margin: "22px 0 4px",
+                      letterSpacing: "-.3px",
+                    }}
+                  >
+                    Policy checks
+                  </h4>
+
+                  {CHECKS.map((c) => {
+                    const hit = (result.reason_codes ?? []).some((r) =>
+                      c.codes.some((x) => r.includes(x))
+                    );
+                    return (
+                      <div className="chk" key={c.label}>
+                        <span
+                          className="cd"
+                          style={{
+                            background: hit ? "var(--bad-bg)" : "var(--ok-bg)",
+                            color: hit ? "var(--bad)" : "var(--ok)",
+                          }}
+                        >
+                          <Icon name={hit ? "x" : "check"} />
+                        </span>
+                        <span className="nm">{c.label}</span>
+                        <span
+                          className="vd"
+                          style={{ color: hit ? "var(--bad)" : "var(--ok)" }}
+                        >
+                          {hit ? "FAIL" : "PASS"}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                  <div className="chk">
+                    <span
+                      className="cd"
+                      style={{
+                        background:
+                          result.risk_score >= 70
+                            ? "var(--bad-bg)"
+                            : result.risk_score >= 40
+                            ? "var(--warn-bg)"
+                            : "var(--ok-bg)",
+                        color:
+                          result.risk_score >= 70
+                            ? "var(--bad)"
+                            : result.risk_score >= 40
+                            ? "var(--warn)"
+                            : "var(--ok)",
+                      }}
+                    >
+                      {result.risk_score}
+                    </span>
+                    <span className="nm">Risk score</span>
+                    <span className="vd" style={{ color: "var(--ink-2)" }}>
+                      {result.risk_score} / 100
+                    </span>
+                  </div>
+
+                  {(result.risk_factors ?? []).length > 0 ? (
+                    <div style={{ marginTop: 16 }}>
+                      {(result.risk_factors ?? []).map((f, i) => (
                         <KV key={i} k={f.factor}>
                           <span style={{ color: f.points > 0 ? "var(--bad)" : undefined }}>
                             +{f.points}
                           </span>
                         </KV>
-                      ))
-                    ) : (
-                      <KV k="Risk factors">none triggered</KV>
-                    )}
-                    <KV
-                      k="Reason codes"
-                      style={{ borderTop: "2px solid var(--line)", marginTop: 6 }}
-                    >
-                      {(result.reason_codes ?? []).map((c) => (
-                        <span key={c} style={{ display: "block" }}>
-                          {c}
-                        </span>
                       ))}
-                    </KV>
+                    </div>
+                  ) : null}
+
+                  <div
+                    style={{
+                      marginTop: 18,
+                      paddingTop: 15,
+                      borderTop: "1px solid var(--line)",
+                    }}
+                  >
+                    <b style={{ fontSize: 13, fontWeight: 800 }}>Overall reason</b>
+                    <p
+                      style={{
+                        fontSize: 13,
+                        marginTop: 5,
+                        lineHeight: 1.6,
+                        color:
+                          result.decision === "ALLOW" ? "var(--ok)" : "var(--ink-2)",
+                      }}
+                    >
+                      {result.decision === "ALLOW"
+                        ? "All policy checks passed. Payment authorized."
+                        : (result.reason_codes ?? []).join(" · ") || "See the codes above."}
+                    </p>
                   </div>
                 </>
               )}

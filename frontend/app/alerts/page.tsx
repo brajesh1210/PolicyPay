@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import AppShell from "@/components/AppShell";
+import Icon from "@/components/Icon";
 import {
   Button,
   Card,
@@ -99,102 +100,97 @@ export default function AlertsPage() {
         />
       </div>
 
-      <Card>
-        <CardHeader
-          title="Alert feed"
-          sub={`${alerts.length} alerts · ${unread.length} unread`}
-          right={
-            <>
-              <Chips<Filter>
-                value={filter}
-                onChange={setFilter}
-                options={[
-                  { value: "all", label: "All" },
-                  { value: "HIGH", label: "High" },
-                  { value: "MEDIUM", label: "Medium" },
-                  { value: "LOW", label: "Low" },
-                ]}
-              />
-              <Button
-                variant="s"
-                sm
-                icon="check"
-                onClick={markAll}
-                loading={busy === "all"}
-                disabled={unread.length === 0}
-              >
-                Mark all read
-              </Button>
-            </>
-          }
+      <div className="phead">
+        <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-.6px" }}>
+          Alert feed
+        </h2>
+        <span className="tag t-info">{alerts.length}</span>
+        <div className="sp" />
+        <Chips<Filter>
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: "all", label: "All" },
+            { value: "HIGH", label: "High" },
+            { value: "MEDIUM", label: "Medium" },
+            { value: "LOW", label: "Low" },
+          ]}
         />
+        <Button
+          variant="s"
+          icon="check"
+          onClick={markAll}
+          loading={busy === "all"}
+          disabled={unread.length === 0}
+        >
+          Mark all as read
+        </Button>
+      </div>
 
-        {loading ? (
+      {loading ? (
+        <Card>
           <CardBody>
             <Skeleton lines={7} height={18} />
           </CardBody>
-        ) : error ? (
+        </Card>
+      ) : error ? (
+        <Card>
           <ErrorState message={error} onRetry={reload} />
-        ) : shown.length === 0 ? (
+        </Card>
+      ) : shown.length === 0 ? (
+        <Card>
           <EmptyState
             icon="bell"
             title="Nothing to report"
             desc="When an agent is blocked, held, or nears its budget, you will see it here."
           />
-        ) : (
-          <div>
-            {shown.map((a) => (
-              <div
-                key={a.id}
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  padding: "17px 20px",
-                  borderBottom: "1px solid var(--line)",
-                  opacity: a.isRead ? 0.62 : 1,
-                }}
-              >
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: a.isRead ? "transparent" : "var(--b-500)",
-                    flex: "none",
-                    marginTop: 6,
-                  }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
-                    <span className={severityTagClass(a.severity)}>{a.severity}</span>
-                    <b className="fs-base fw-black">{a.title}</b>
-                    <span
-                      className="fs-mono-xs"
-                      style={{
-                        marginLeft: "auto",
-                        color: "var(--ink-3)",
-                      }}
-                    >
-                      {ago(a.createdAt)}
-                    </span>
-                  </div>
-                  <p className="fs-body-sm" style={{ color: "var(--ink-2)", marginTop: 6, lineHeight: 1.55 }}>
-                    {a.description}
-                  </p>
-                  <div style={{ display: "flex", gap: 8, marginTop: 11, flexWrap: "wrap" }}>
+        </Card>
+      ) : (
+        <div>
+          {shown.map((a) => {
+            const tone =
+              a.severity === "HIGH"
+                ? { bg: "var(--bad-bg)", fg: "var(--bad)", icon: "warn" }
+                : a.severity === "MEDIUM"
+                ? { bg: "var(--warn-bg)", fg: "var(--warn)", icon: "shield" }
+                : { bg: "var(--b-100)", fg: "var(--b-600)", icon: "bell" };
+            return (
+              <article className={`arow${a.isRead ? " read" : ""}`} key={a.id}>
+                <span className="ai" style={{ background: tone.bg }}>
+                  <Icon name={tone.icon} style={{ stroke: tone.fg }} />
+                </span>
+
+                <div className="tx">
+                  <b>{a.title}</b>
+                  <p>{a.description}</p>
+                  <div className="mt-r">
+                    <span>{ago(a.createdAt)}</span>
+                    <span aria-hidden="true">·</span>
                     <span className="code">{humanizeCode(a.type)}</span>
-                    {!a.isRead ? (
-                      <Button variant="s" sm loading={busy === a.id} onClick={() => markRead(a)}>
-                        Mark read
-                      </Button>
-                    ) : null}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
+
+                <div className="rt">
+                  <span className={severityTagClass(a.severity)}>{a.severity}</span>
+                  {!a.isRead ? (
+                    <Button
+                      variant="s"
+                      sm
+                      loading={busy === a.id}
+                      onClick={() => markRead(a)}
+                    >
+                      Mark read
+                    </Button>
+                  ) : (
+                    <span className="fs-meta">read</span>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
     </AppShell>
   );
 }

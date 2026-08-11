@@ -33,6 +33,112 @@ import toast from "react-hot-toast";
 
 const DAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/* ── the spending line, drawn as one smooth path ───────────── */
+function SpendLine({
+  trends,
+  max,
+  money,
+}: {
+  trends: { date: string; amount: number; count: number }[];
+  max: number;
+  money: (n: number) => string;
+}) {
+  // the svg stretches to the card width, so all geometry is in a
+  // fixed 0..100 x 0..100 box and the axis labels live in real HTML
+  const W = 100;
+  const H = 100;
+  const padT = 6;
+  const padB = 6;
+  const iw = W;
+  const ih = H - padT - padB;
+  const padL = 0;
+
+  // round the top of the axis up to something friendly
+  const nice = (n: number) => {
+    if (n <= 0) return 1;
+    const mag = Math.pow(10, Math.floor(Math.log10(n)));
+    return Math.ceil(n / mag) * mag;
+  };
+  const top = nice(max);
+
+  const pts = trends.map((t, i) => {
+    const x = trends.length === 1 ? iw / 2 : (i / (trends.length - 1)) * iw;
+    const y = padT + ih - (t.amount / top) * ih;
+    return { x, y, t };
+  });
+
+  // catmull-rom → cubic bézier, so the curve stays inside the data
+  let d = "";
+  pts.forEach((p, i) => {
+    if (i === 0) {
+      d += `M${p.x} ${p.y}`;
+      return;
+    }
+    const p0 = pts[i - 2] ?? pts[i - 1];
+    const p1 = pts[i - 1];
+    const p2 = p;
+    const p3 = pts[i + 1] ?? p;
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${c1x} ${c1y} ${c2x} ${c2y} ${p2.x} ${p2.y}`;
+  });
+
+  const area = pts.length
+    ? `${d} L${pts[pts.length - 1].x} ${padT + ih} L${pts[0].x} ${padT + ih} Z`
+    : "";
+
+  const rows = [0, 0.25, 0.5, 0.75, 1];
+
+  return (
+    <>
+      <div className="lchart">
+        <div className="lchart-y">
+          {rows.map((r) => (
+            <span key={r} style={{ top: `${((padT + ih - r * ih) / H) * 100}%` }}>
+              {money(top * r).replace(/\.00$/, "")}
+            </span>
+          ))}
+        </div>
+        <div className="lchart-plot">
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="spendFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="var(--b-400)" stopOpacity="0.22" />
+              <stop offset="1" stopColor="var(--b-400)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {rows.map((r) => {
+            const y = padT + ih - r * ih;
+            return <line className="gl" key={r} x1={0} y1={y} x2={W} y2={y} />;
+          })}
+
+          {area ? <path d={area} fill="url(#spendFill)" /> : null}
+          {d ? <path className="ln" d={d} vectorEffect="non-scaling-stroke" /> : null}
+          </svg>
+          {pts.map((p) => (
+            <i
+              className="lchart-dot"
+              key={p.t.date}
+              style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / H) * 100}%` }}
+              title={`${money(p.t.amount)} · ${p.t.count} tx`}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="lchart-x">
+        {pts.map((p) => (
+          <span key={p.t.date} style={{ left: `${(p.x / W) * 100}%` }}>
+            {DAY[new Date(p.t.date + "T00:00:00Z").getUTCDay()]}
+          </span>
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function DashboardPage() {
   const money = useMoney();
   const ov = useApi<Overview>("/v1/analytics/overview");
@@ -181,29 +287,10 @@ export default function DashboardPage() {
               <EmptyState title="No spending yet" desc="Run the demo agent to see data here." />
             ) : (
               <>
-                <div className="bars">
-                  {trends.map((t) => {
-                    const h = Math.max(3, (t.amount / maxAmt) * 150);
-                    const d = new Date(t.date + "T00:00:00Z");
-                    return (
-                      <div className="c" key={t.date}>
-                        <div className="st">
-                          <i
-                            style={{
-                              height: h,
-                              background: "linear-gradient(180deg,#3787F6,#1459D0)",
-                            }}
-                            title={`${money(t.amount)} · ${t.count} tx`}
-                          />
-                        </div>
-                        <small>{DAY[d.getUTCDay()]}</small>
-                      </div>
-                    );
-                  })}
-                </div>
+                <SpendLine trends={trends} max={maxAmt} money={money} />
                 <div className="leg">
                   <span>
-                    <i style={{ background: "linear-gradient(180deg,#3787F6,#1459D0)" }} />
+                    <i style={{ background: "var(--b-500)" }} />
                     Amount spent per day
                   </span>
                   <span style={{ marginLeft: "auto", color: "var(--ink-3)" }}>
@@ -226,7 +313,7 @@ export default function DashboardPage() {
               <div className="donut">
                 <div className="gauge">
                   <svg viewBox="0 0 120 120" aria-hidden="true">
-                    <circle cx="60" cy="60" r="50" fill="none" stroke="#EFF1F7" strokeWidth="15" />
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#E7ECF5" strokeWidth="15" />
                     <circle
                       cx="60"
                       cy="60"
@@ -242,7 +329,7 @@ export default function DashboardPage() {
                       cy="60"
                       r="50"
                       fill="none"
-                      stroke="#EF6B6B"
+                      stroke="#F0787C"
                       strokeWidth="15"
                       strokeLinecap="round"
                       strokeDasharray={`${seg(dist?.deny ?? 0)} ${circ}`}
@@ -253,7 +340,7 @@ export default function DashboardPage() {
                       cy="60"
                       r="50"
                       fill="none"
-                      stroke="#F0A93B"
+                      stroke="#F7C065"
                       strokeWidth="15"
                       strokeLinecap="round"
                       strokeDasharray={`${seg(dist?.require_approval ?? 0)} ${circ}`}
@@ -261,8 +348,8 @@ export default function DashboardPage() {
                     />
                     <defs>
                       <linearGradient id="gd" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0" stopColor="#3787F6" />
-                        <stop offset="1" stopColor="#1459D0" />
+                        <stop offset="0" stopColor="#3DD68C" />
+                        <stop offset="1" stopColor="#12A150" />
                       </linearGradient>
                     </defs>
                   </svg>
@@ -275,15 +362,15 @@ export default function DashboardPage() {
                 </div>
                 <div className="dlist">
                   <div className="dl-row">
-                    <i style={{ background: "#236CDF" }} />
+                    <i style={{ background: "#12A150" }} />
                     Allowed<b>{num(dist?.allow ?? 0)}</b>
                   </div>
                   <div className="dl-row">
-                    <i style={{ background: "#EF6B6B" }} />
+                    <i style={{ background: "#F0787C" }} />
                     Denied<b>{num(dist?.deny ?? 0)}</b>
                   </div>
                   <div className="dl-row">
-                    <i style={{ background: "#F0A93B" }} />
+                    <i style={{ background: "#F7C065" }} />
                     Approval<b>{num(dist?.require_approval ?? 0)}</b>
                   </div>
                   <div

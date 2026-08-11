@@ -39,6 +39,8 @@ export default function SettingsPage() {
   const [killLocal, setKillLocal] = useState<boolean | null>(null);
   const killOn = killLocal ?? ks.data?.active ?? false;
 
+  const [tab, setTab] = useState<"profile" | "notifications" | "keys" | "system">("profile");
+
   const [notifDeny, setNotifDeny] = useState(true);
   const [notifApproval, setNotifApproval] = useState(true);
   const [notifBudget, setNotifBudget] = useState(true);
@@ -83,10 +85,36 @@ export default function SettingsPage() {
         />
       </div>
 
-      <div className="split">
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Card>
-            <CardHeader title="Your account" sub="Signed in as the workspace admin" />
+      <div className="slay">
+        <Card>
+          <CardBody style={{ padding: 12 }}>
+            <div className="stabs" role="tablist" aria-label="Settings sections">
+              {(
+                [
+                  ["profile", "Profile", "user"],
+                  ["notifications", "Notifications", "bell"],
+                  ["keys", "API Keys", "key"],
+                  ["system", "System", "cog"],
+                ] as [typeof tab, string, string][]
+              ).map(([v, label, ic]) => (
+                <button
+                  key={v}
+                  role="tab"
+                  aria-selected={tab === v}
+                  className={`stab${tab === v ? " on" : ""}`}
+                  onClick={() => setTab(v)}
+                >
+                  <Icon name={ic} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
+          <Card style={{ display: tab === "profile" ? undefined : "none" }}>
+            <CardHeader title="Profile Information" sub="Signed in as the workspace admin" />
             <CardBody>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
                 <span className="av" style={{ width: 52, height: 52, fontSize: 17 }}>
@@ -155,7 +183,7 @@ export default function SettingsPage() {
             </CardBody>
           </Card>
 
-          <Card>
+          <Card style={{ display: tab === "notifications" ? undefined : "none" }}>
             <CardHeader title="Notifications" sub="What reaches you, and how loudly" />
             <CardBody style={{ padding: "6px 20px 20px" }}>
               <SwitchRow
@@ -185,7 +213,7 @@ export default function SettingsPage() {
             </CardBody>
           </Card>
 
-          <Card>
+          <Card style={{ display: tab === "keys" ? undefined : "none" }}>
             <CardHeader
               title="Agent keys"
               sub="Shown once at creation, stored only as a hash"
@@ -228,10 +256,8 @@ export default function SettingsPage() {
               </div>
             )}
           </Card>
-        </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Card>
+          <Card style={{ display: tab === "system" ? undefined : "none" }}>
             <CardHeader
               title="System"
               sub="Live status"
@@ -267,7 +293,7 @@ export default function SettingsPage() {
             </CardBody>
           </Card>
 
-          <Card>
+          <Card style={{ display: tab === "system" ? undefined : "none" }}>
             <CardHeader title="Before a live demo" sub="Run these in order" />
             <CardBody>
               <p style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.6, marginBottom: 16 }}>
@@ -287,7 +313,7 @@ export default function SettingsPage() {
             </CardBody>
           </Card>
 
-          <Card style={{ borderColor: "#F2C9C9" }}>
+          <Card style={{ display: tab === "system" ? undefined : "none" }}>
             <div className="card-h" style={{ borderBottomColor: "#F2C9C9" }}>
               <div>
                 <h3 style={{ color: "var(--bad)" }}>Danger zone</h3>
