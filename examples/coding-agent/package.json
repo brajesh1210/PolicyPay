@@ -1,0 +1,15 @@
+{
+  "name": "policypay-coding-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "A coding agent that asks PolicyPay before it spends",
+  "scripts": {
+    "start": "node agent.mjs",
+    "setup": "policypay test"
+  },
+  "dependencies": {
+    "policypay": "file:../../packages/sdk",
+    "dotenv": "^16.4.5"
+  }
+}
