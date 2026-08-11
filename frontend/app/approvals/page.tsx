@@ -11,7 +11,6 @@ import {
   EmptyState,
   ErrorState,
   KV,
-  RiskGauge,
   Skeleton,
   Timeline,
   TimelineItem,
@@ -53,23 +52,30 @@ export default function ApprovalsPage() {
     }
   }
 
+  const initials = (n?: string | null) => {
+    const src = (n || "AG").trim();
+    const parts = src.split(/[\s@._-]+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return src.slice(0, 2).toUpperCase();
+  };
+
+  const riskTone = (n: number) =>
+    n >= 70 ? "t-no" : n >= 40 ? "t-hold" : "t-ok";
+
   return (
     <AppShell title="Approvals" sub="Payments that need a human">
-      {pending.length > 0 ? (
-        <div className="banner crit">
-          <Icon name="warn" />
-          <div className="tx">
-            <b>
-              {pending.length} request{pending.length > 1 ? "s are" : " is"} holding an
-              agent still
-            </b>
-            <span>Each one waits until you decide. Nothing is signed in the meantime.</span>
-          </div>
-        </div>
-      ) : null}
+      <div className="phead">
+        <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-.6px" }}>
+          Pending Approvals ({pending.length})
+        </h2>
+        <div className="sp" />
+        <Button variant="s" icon="refresh" onClick={reload}>
+          Refresh
+        </Button>
+      </div>
 
-      <div className="split">
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div className="split" style={{ gridTemplateColumns: "minmax(0,2.1fr) minmax(0,1fr)" }}>
+        <div>
           {loading ? (
             <Card>
               <CardBody>
@@ -89,62 +95,96 @@ export default function ApprovalsPage() {
               />
             </Card>
           ) : (
-            pending.map((a) => {
-              const tx = a.transaction;
-              const score = tx?.riskScore ?? 0;
-              return (
-                <Card key={a.id}>
-                  <CardHeader
-                    title={`${money(tx?.amountUsd ?? 0)} to ${tx?.merchantDomain ?? "—"}`}
-                    sub={`${a.agent?.name ?? "Unknown agent"} · ${ago(a.createdAt)}`}
-                    right={<span className="tag t-hold">AWAITING YOU</span>}
-                  />
-                  <CardBody>
-                    <div style={{ display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
-                      <RiskGauge score={score} size={126} label="risk" />
-                      <div style={{ flex: 1, minWidth: 230 }}>
-                        <KV k="Reason">{a.reason}</KV>
-                        <KV k="Reason codes">
-                          {(tx?.reasonCodes ?? []).map((c) => (
-                            <span key={c} style={{ display: "block" }}>
-                              {c}
-                            </span>
-                          ))}
-                        </KV>
-                        {tx?.purpose ? <KV k="Purpose">{tx.purpose}</KV> : null}
-                        <KV k="Expires">{istDateTime(a.expiresAt)} IST</KV>
-                        <KV k="Approval ID">
-                          <span className="mono" style={{ fontSize: 12 }}>
-                            {a.id}
-                          </span>
-                        </KV>
-                      </div>
+            <div className="apg" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(min(370px,100%),1fr))" }}>
+              {pending.map((a) => {
+                const tx = a.transaction;
+                const score = tx?.riskScore ?? 0;
+                return (
+                  <article className="apc" key={a.id}>
+                    <div className="who-r">
+                      <span className="av">{initials(a.agent?.name)}</span>
+                      <span className="t">
+                        <b>{a.agent?.name ?? "Unknown agent"}</b>
+                        <span>{a.agentId ?? shortId(a.id)}</span>
+                      </span>
+                      <span className={`tag ${riskTone(score)}`}>
+                        <Icon name="warn" style={{ width: 12, height: 12 }} />
+                        Risk Score: {score}
+                      </span>
                     </div>
 
-                    <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
-                      <Button
-                        variant="ok"
-                        icon="check"
-                        loading={busy === a.id + "approve"}
-                        disabled={!!busy}
-                        onClick={() => act(a.id, "approve")}
-                      >
-                        Approve payment
-                      </Button>
-                      <Button
-                        variant="d"
-                        icon="x"
-                        loading={busy === a.id + "reject"}
+                    <div className="mrow">
+                      <span className="mi">
+                        <Icon name="store" />
+                      </span>
+                      <span className="t">
+                        <b>{tx?.merchantDomain ?? "—"}</b>
+                        <span>{a.agent?.name ?? "agent"} wants to pay this merchant</span>
+                      </span>
+                    </div>
+
+                    <div className="amt">
+                      <b>{money(tx?.amountUsd ?? 0)}</b>
+                      <span style={{ flex: 1 }} />
+                      <span className="tag t-info">
+                        <Icon name="coin" style={{ width: 12, height: 12 }} />
+                        USDC
+                      </span>
+                    </div>
+
+                    <div className="why">
+                      <Icon name="info" />
+                      <span>
+                        <b>Reason</b>
+                        <span>{a.reason}</span>
+                      </span>
+                    </div>
+
+                    {(tx?.reasonCodes ?? []).length ? (
+                      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 12 }}>
+                        {(tx?.reasonCodes ?? []).map((c) => (
+                          <span className="code" key={c}>
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <div className="when">
+                      <Icon name="clock" />
+                      Requested {ago(a.createdAt)} · expires {istDateTime(a.expiresAt)} IST
+                    </div>
+
+                    <div className="acts">
+                      <button
+                        className="btn btn-rej"
                         disabled={!!busy}
                         onClick={() => act(a.id, "reject")}
                       >
+                        {busy === a.id + "reject" ? (
+                          <span className="spin" />
+                        ) : (
+                          <Icon name="x" />
+                        )}
                         Reject
-                      </Button>
+                      </button>
+                      <button
+                        className="btn btn-app"
+                        disabled={!!busy}
+                        onClick={() => act(a.id, "approve")}
+                      >
+                        {busy === a.id + "approve" ? (
+                          <span className="spin" />
+                        ) : (
+                          <Icon name="check" />
+                        )}
+                        Approve
+                      </button>
                     </div>
-                  </CardBody>
-                </Card>
-              );
-            })
+                  </article>
+                );
+              })}
+            </div>
           )}
         </div>
 

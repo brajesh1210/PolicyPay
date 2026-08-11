@@ -26,6 +26,8 @@ export default function AuditLogsPage() {
   const money = useMoney();
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<AuditLog | null>(null);
+  const [agentQ, setAgentQ] = useState("");
+  const [q, setQ] = useState("");
 
   const params = useMemo(() => ({ page, limit: LIMIT }), [page]);
   const { data, meta, loading, error, reload } = useApiList<AuditLog[]>(
@@ -33,9 +35,52 @@ export default function AuditLogsPage() {
     params
   );
 
-  const rows = Array.isArray(data) ? data : [];
-  const total = meta?.total ?? rows.length;
+  const all = Array.isArray(data) ? data : [];
+  const rows = all.filter((r) => {
+    const a = agentQ.trim().toLowerCase();
+    const n = q.trim().toLowerCase();
+    if (a && !(r.transaction?.agent?.name ?? "").toLowerCase().includes(a)) return false;
+    if (
+      n &&
+      !`${r.transaction?.merchantDomain ?? ""} ${r.payloadHash ?? ""} ${r.id}`
+        .toLowerCase()
+        .includes(n)
+    )
+      return false;
+    return true;
+  });
+  const total = agentQ || q ? rows.length : meta?.total ?? rows.length;
   const detail = selected ?? rows[0] ?? null;
+
+  const agentNames = Array.from(
+    new Set(all.map((r) => r.transaction?.agent?.name).filter(Boolean) as string[])
+  );
+
+  function exportCsv() {
+    const head = ["time", "agent", "merchant", "amount_usd", "payload_hash", "prev_hash"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const body = rows.map((r) =>
+      [
+        r.createdAt,
+        r.transaction?.agent?.name ?? "",
+        r.transaction?.merchantDomain ?? "",
+        r.transaction?.amountUsd ?? "",
+        r.payloadHash,
+        r.prevHash,
+      ]
+        .map(esc)
+        .join(",")
+    );
+    const blob = new Blob([[head.join(","), ...body].join("\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `policypay-audit-page-${page}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function copyJson() {
     if (!detail) return;
@@ -45,13 +90,59 @@ export default function AuditLogsPage() {
 
   return (
     <AppShell title="Audit Logs" sub="Append-only record of every decision">
+      <Card style={{ marginBottom: 22 }}>
+        <CardBody style={{ padding: "22px clamp(20px,2.6vw,26px)" }}>
+          <div className="fbar">
+            <div className="fld">
+              <label htmlFor="a-agent">Agent</label>
+              <select
+                className="in"
+                id="a-agent"
+                value={agentQ}
+                onChange={(e) => {
+                  setAgentQ(e.target.value);
+                  setSelected(null);
+                }}
+              >
+                <option value="">All Agents</option>
+                {agentNames.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="fld">
+              <label htmlFor="a-q">Search</label>
+              <input
+                className="in"
+                id="a-q"
+                placeholder="Merchant, hash or id…"
+                value={q}
+                onChange={(e) => {
+                  setQ(e.target.value);
+                  setSelected(null);
+                }}
+              />
+            </div>
+
+            <div className="go">
+              <Button variant="p" icon="refresh" onClick={reload}>
+                Apply Filters
+              </Button>
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+
       <Card>
         <CardHeader
           title="Audit trail"
           sub="Append-only · nothing here can be edited or deleted"
           right={
-            <Button variant="s" sm icon="refresh" onClick={reload}>
-              Refresh
+            <Button variant="s" sm icon="upload" onClick={exportCsv}>
+              Export CSV
             </Button>
           }
         />

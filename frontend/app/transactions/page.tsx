@@ -31,6 +31,7 @@ export default function TransactionsPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<StatusFilter>("");
   const [agentId, setAgentId] = useState("");
+  const [merchantQ, setMerchantQ] = useState("");
   const [selected, setSelected] = useState<Transaction | null>(null);
 
   const params = useMemo(() => {
@@ -46,9 +47,41 @@ export default function TransactionsPage() {
   );
   const agents = useApi<Agent[]>("/v1/agents");
 
-  const rows = Array.isArray(data) ? data : [];
-  const total = meta?.total ?? rows.length;
+  const all = Array.isArray(data) ? data : [];
+  const needle = merchantQ.trim().toLowerCase();
+  const rows = needle
+    ? all.filter((t) => (t.merchantDomain ?? "").toLowerCase().includes(needle))
+    : all;
+  const total = needle ? rows.length : meta?.total ?? rows.length;
   const detail = selected ?? rows[0] ?? null;
+
+  /* the visible page, as a CSV the judges can open in Excel */
+  function exportCsv() {
+    const head = ["id", "agent", "merchant", "amount_usd", "decision", "risk", "when"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const body = rows.map((t) =>
+      [
+        t.id,
+        t.agent?.name ?? "",
+        t.merchantDomain,
+        t.amountUsd,
+        t.decision,
+        t.riskScore,
+        t.createdAt,
+      ]
+        .map(esc)
+        .join(",")
+    );
+    const blob = new Blob([[head.join(","), ...body].join("\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `policypay-transactions-page-${page}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function changeFilter(fn: () => void) {
     fn();
@@ -58,6 +91,61 @@ export default function TransactionsPage() {
 
   return (
     <AppShell title="Transactions" sub="Every payment your agents asked for">
+      <Card style={{ marginBottom: 22 }}>
+        <CardBody style={{ padding: "22px clamp(20px,2.6vw,26px)" }}>
+          <div className="fbar">
+            <div className="fld">
+              <label htmlFor="f-status">Status</label>
+              <select
+                className="in"
+                id="f-status"
+                value={status}
+                onChange={(e) => changeFilter(() => setStatus(e.target.value as StatusFilter))}
+              >
+                <option value="">All</option>
+                <option value="ALLOW">Allowed</option>
+                <option value="DENY">Denied</option>
+                <option value="REQUIRE_APPROVAL">Approval</option>
+              </select>
+            </div>
+
+            <div className="fld">
+              <label htmlFor="f-agent">Agent</label>
+              <select
+                className="in"
+                id="f-agent"
+                value={agentId}
+                onChange={(e) => changeFilter(() => setAgentId(e.target.value))}
+              >
+                <option value="">All Agents</option>
+                {(agents.data ?? []).map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="fld">
+              <label htmlFor="f-search">Merchant</label>
+              <input
+                className="in"
+                id="f-search"
+                placeholder="Search merchant…"
+                value={merchantQ}
+                onChange={(e) => setMerchantQ(e.target.value)}
+              />
+            </div>
+
+            <div className="go">
+              <Button variant="p" icon="refresh" onClick={reload}>
+                Apply Filters
+              </Button>
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+
       <Card>
         <CardHeader
           title="All transactions"
@@ -69,47 +157,11 @@ export default function TransactionsPage() {
                 } of ${total}`
           }
           right={
-            <Button variant="s" sm icon="refresh" onClick={reload}>
-              Refresh
+            <Button variant="s" sm icon="download" onClick={exportCsv}>
+              Export CSV
             </Button>
           }
         />
-
-        <div
-          className="card-b"
-          style={{
-            padding: "16px 20px",
-            borderBottom: "1px solid var(--line)",
-            background: "var(--tint)",
-          }}
-        >
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <Chips<StatusFilter>
-              value={status}
-              onChange={(v) => changeFilter(() => setStatus(v))}
-              options={[
-                { value: "", label: "All" },
-                { value: "ALLOW", label: "Allowed" },
-                { value: "DENY", label: "Denied" },
-                { value: "REQUIRE_APPROVAL", label: "Approval" },
-              ]}
-            />
-            <select
-              className="in"
-              style={{ width: "auto", height: 34, fontSize: 12.5, padding: "0 34px 0 12px" }}
-              aria-label="Filter by agent"
-              value={agentId}
-              onChange={(e) => changeFilter(() => setAgentId(e.target.value))}
-            >
-              <option value="">Every agent</option>
-              {(agents.data ?? []).map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
 
         {loading ? (
           <CardBody>

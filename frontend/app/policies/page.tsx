@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell";
+import Icon from "@/components/Icon";
 import {
   Button,
+  Switch,
   Card,
   CardBody,
   CardHeader,
@@ -20,6 +22,12 @@ import { apiSend } from "@/lib/api";
 import type { Policy } from "@/lib/types";
 import toast from "react-hot-toast";
 import { useCurrency } from "@/lib/currency";
+
+const GLYPH: Record<string, string> = {
+  CONSERVATIVE: "shield",
+  MODERATE: "scale",
+  AGGRESSIVE: "rocket",
+};
 
 const BLURB: Record<string, string> = {
   CONSERVATIVE: "Tight caps and a narrow window. Good for a new agent you do not trust yet.",
@@ -61,6 +69,7 @@ export default function PoliciesPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
+  const [toggling, setToggling] = useState<string | null>(null);
 
   useEffect(() => {
     if (!editId && policies.length > 0) {
@@ -78,6 +87,20 @@ export default function PoliciesPage() {
 
   function set<K extends keyof Draft>(k: K, v: Draft[K]) {
     setDraft((d) => (d ? { ...d, [k]: v } : d));
+  }
+
+  async function toggleEnabled(p: Policy, next: boolean) {
+    setToggling(p.id);
+    try {
+      await apiSend("patch", `/v1/policies/${p.id}`, { enabled: next });
+      toast.success(next ? `${p.name} enabled` : `${p.name} disabled`);
+      if (editId === p.id) set("enabled", next);
+      reload();
+    } catch (e: any) {
+      toast.error(e?.message || "Could not change the policy");
+    } finally {
+      setToggling(null);
+    }
   }
 
   async function save() {
@@ -140,73 +163,79 @@ export default function PoliciesPage() {
           <EmptyState icon="shield" title="No policies found" />
         </Card>
       ) : (
-        <div className="pgrid">
+        <div className="split3" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(min(420px,100%),1fr))" }}>
           {policies.map((p) => (
             <article className="card" key={p.id}>
-              <CardHeader
-                title={p.name}
-                sub={`${p._count?.agents ?? 0} agent${(p._count?.agents ?? 0) === 1 ? "" : "s"} assigned`}
-                right={
-                  <span className={p.enabled ? "tag t-ok" : "tag t-mute"}>
-                    {p.enabled ? "ENABLED" : "DISABLED"}
-                  </span>
-                }
-              />
+              <div className="card-h">
+                <span
+                  className="ac-av"
+                  style={{ width: 42, height: 42, borderRadius: 13 }}
+                  aria-hidden="true"
+                >
+                  <Icon name={GLYPH[p.template] ?? "shield"} />
+                </span>
+                <div>
+                  <h3>{p.name}</h3>
+                  <p>
+                    {p._count?.agents ?? 0} agent
+                    {(p._count?.agents ?? 0) === 1 ? "" : "s"} assigned
+                  </p>
+                </div>
+                <div className="r">
+                  <Switch
+                    checked={p.enabled}
+                    onChange={(v) => toggleEnabled(p, v)}
+                    disabled={toggling === p.id}
+                    label={`${p.name} enabled`}
+                  />
+                </div>
+              </div>
               <CardBody>
                 <p style={{ fontSize: 13.5, color: "var(--ink-2)", lineHeight: 1.6 }}>
                   {BLURB[p.template] ?? "Custom policy."}
                 </p>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 12,
-                    marginTop: 18,
-                    paddingTop: 16,
-                    borderTop: "1px solid var(--line)",
-                  }}
-                >
-                  {[
-                    ["Per transaction", money(p.perTxLimitUsd)],
-                    ["Per day", money(p.dailyBudgetUsd)],
-                    ["Per month", money(p.monthlyBudgetUsd)],
-                    ["Rate limit", `${p.maxTxPerHour}/hr`],
-                  ].map(([k, v]) => (
-                    <div key={k}>
-                      <span
-                        style={{
-                          fontSize: 10.5,
-                          fontWeight: 800,
-                          letterSpacing: ".8px",
-                          textTransform: "uppercase",
-                          color: "var(--ink-3)",
-                        }}
-                      >
-                        {k}
+                <div className="ptiles">
+                  {(
+                    [
+                      ["card", "Per Tx", money(p.perTxLimitUsd)],
+                      ["calendar", "Per Day", money(p.dailyBudgetUsd)],
+                      ["wallet", "Per Month", money(p.monthlyBudgetUsd)],
+                      ["clock", "TX / Hour", String(p.maxTxPerHour)],
+                      ["store", "TX / Day", String(p.maxTxPerDay)],
+                      ["gauge", "Deny At", String(p.denyThresholdScore)],
+                    ] as [string, string, string][]
+                  ).map(([ic, k, v]) => (
+                    <div className="ptile" key={k}>
+                      <span className="g">
+                        <Icon name={ic} />
                       </span>
-                      <b style={{ display: "block", fontSize: 18, fontWeight: 800, marginTop: 3 }}>
-                        {v}
-                      </b>
+                      <span className="t">
+                        <span>{k}</span>
+                        <b>{v}</b>
+                      </span>
                     </div>
                   ))}
                 </div>
 
-                <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
-                  <KV k="Approval at">risk ≥ {p.approvalThresholdScore}</KV>
-                  <KV k="Deny at">risk ≥ {p.denyThresholdScore}</KV>
-                  <KV k="Unknown merchants">
-                    <span style={{ color: p.blockUnknownMerchants ? "var(--bad)" : "var(--ink-3)" }}>
-                      {p.blockUnknownMerchants ? "Blocked" : "Allowed"}
-                    </span>
-                  </KV>
-                </div>
+                <KV k="Approval at">risk ≥ {p.approvalThresholdScore}</KV>
+                <KV k="Deny at">risk ≥ {p.denyThresholdScore}</KV>
+                <KV k="Unknown merchants">
+                  <span
+                    style={{ color: p.blockUnknownMerchants ? "var(--bad)" : "var(--ink-3)" }}
+                  >
+                    {p.blockUnknownMerchants ? "Blocked" : "Allowed"}
+                  </span>
+                </KV>
 
-                <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-                  <Button variant="s" sm icon="cog" style={{ flex: 1 }} onClick={() => pick(p)}>
-                    Edit policy
-                  </Button>
-                </div>
+                <Button
+                  variant="s"
+                  icon="cog"
+                  className="pedit"
+                  onClick={() => pick(p)}
+                >
+                  Edit Policy
+                </Button>
               </CardBody>
             </article>
           ))}
