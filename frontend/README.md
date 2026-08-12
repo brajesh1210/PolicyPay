@@ -1,7 +1,9 @@
 # PolicyPay — Frontend
 
 Next.js 14 (App Router) + TypeScript + NextAuth v4.
-Talks to the live backend at `https://policypay-production.up.railway.app`.
+Talks to the live backend at `https://policypay-production.up.railway.app`
+via a same-origin `/api/gateway/*` rewrite (the browser never resolves the
+Railway host — that DNS failure is what emptied every dashboard page).
 
 ## Setup
 
