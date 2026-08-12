@@ -595,9 +595,13 @@ export function Sheet({
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // the topbar has its own backdrop-filter, which makes Chrome paint it
+    // above our scrim. Flag the body so the CSS can stand it down.
+    document.body.classList.add("sheet-open");
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      document.body.classList.remove("sheet-open");
     };
   }, [open, onClose]);
 
@@ -605,7 +609,7 @@ export function Sheet({
 
   return createPortal(
     <div
-      className={`sheet-wrap${shown ? " in" : ""}`}
+      className={`sheet-wrap${shown ? " is-open" : ""}`}
       role="dialog"
       aria-modal="true"
       aria-label={title}
