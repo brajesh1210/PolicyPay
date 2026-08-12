@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppShell from "@/components/AppShell";
 import Icon from "@/components/Icon";
 import {
@@ -8,11 +8,11 @@ import {
   Switch,
   Card,
   CardBody,
-  CardHeader,
   EmptyState,
   ErrorState,
   Field,
   KV,
+  Sheet,
   Skeleton,
   SwitchRow,
 } from "@/components/ui";
@@ -71,18 +71,16 @@ export default function PoliciesPage() {
   const [busy, setBusy] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!editId && policies.length > 0) {
-      setEditId(policies[0].id);
-      setDraft(toDraft(policies[0]));
-    }
-  }, [policies, editId]);
-
   const editing = policies.find((p) => p.id === editId) ?? null;
 
   function pick(p: Policy) {
     setEditId(p.id);
     setDraft(toDraft(p));
+  }
+
+  function closeEdit() {
+    setEditId(null);
+    setDraft(null);
   }
 
   function set<K extends keyof Draft>(k: K, v: Draft[K]) {
@@ -128,6 +126,7 @@ export default function PoliciesPage() {
       });
       toast.success(`${editing.name} saved`);
       reload();
+      closeEdit();
     } catch (e: any) {
       toast.error(e?.message || "Could not save the policy");
     } finally {
@@ -242,14 +241,19 @@ export default function PoliciesPage() {
         </div>
       )}
 
-      {editing && draft ? (
-        <Card className="mt">
-          <CardHeader
-            title={`Edit · ${editing.name}`}
-            sub={`Applies to ${editing._count?.agents ?? 0} agent(s) immediately on save`}
-            right={<span className="tag t-info">{editing.template}</span>}
-          />
-          <CardBody>
+      <Sheet
+        open={!!editing && !!draft}
+        onClose={closeEdit}
+        title={editing ? `Edit · ${editing.name}` : "Edit policy"}
+        sub={
+          editing
+            ? `Applies to ${editing._count?.agents ?? 0} agent(s) immediately on save`
+            : undefined
+        }
+        wide
+      >
+        {editing && draft ? (
+          <>
             <div className="grid3">
               <Field
                 label="Per transaction (USD)"
@@ -362,13 +366,13 @@ export default function PoliciesPage() {
               <Button variant="p" icon="check" loading={busy} onClick={save}>
                 Save policy
               </Button>
-              <Button variant="s" onClick={() => setDraft(toDraft(editing))} disabled={busy}>
-                Discard changes
+              <Button variant="s" icon="x" onClick={closeEdit} disabled={busy}>
+                Cancel
               </Button>
             </div>
-          </CardBody>
-        </Card>
-      ) : null}
+          </>
+        ) : null}
+      </Sheet>
     </AppShell>
   );
 }

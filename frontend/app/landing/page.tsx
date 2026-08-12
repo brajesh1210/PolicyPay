@@ -23,21 +23,11 @@ export default function LandingPage() {
             <a href="#results">Results</a>
           </div>
           <div className="nav-r">
-            <Link className="btn btn-g" href="/login">Log in</Link>
+            <Link className="btn btn-g" href="/login">Sign in</Link>
             <Link className="btn btn-p" href="/dashboard">Open dashboard</Link>
-            <button className="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sheet">
-              <i></i><i></i>
-            </button>
           </div>
         </div>
       </nav>
-      <div className="sheet" id="sheet">
-        <a href="#problem">The problem</a>
-        <a href="#how">How it works</a>
-        <a href="#proof">See it run</a>
-        <a href="#results">Results</a>
-        <a href="#cta">Open dashboard</a>
-      </div>
 
       {/* ══ HERO ══ */}
       <header className="hero" id="top">
@@ -48,7 +38,7 @@ export default function LandingPage() {
             <span className="eyebrow"><i className="live"></i>Live on the x402 protocol</span>
             <h1>Your AI agent wants to spend<br /><span className="serif">you decide before it does.</span></h1>
             <p className="lede">PolicyPay sits between every agent and every payment. Eighteen checks,
-              one verdict, in under 150 milliseconds — and the agent never holds the key.</p>
+              one verdict, in under 150 milliseconds — and the agent never holds the key.</p>
             <div className="cta">
               <Link className="btn btn-p" href="/dashboard">Open the dashboard
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
