@@ -861,9 +861,17 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .sheet-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;
   z-index:120;display:flex;align-items:center;
   justify-content:center;padding:clamp(14px,3vw,40px);
-  background:rgba(232,236,244,.9);
+  background:rgba(234,238,245,.55);
+  backdrop-filter:blur(20px) saturate(115%);
+  -webkit-backdrop-filter:blur(20px) saturate(115%);
   opacity:0;transition:opacity 220ms var(--e);overflow-y:auto}
-.sheet-wrap.in{opacity:1}
+.sheet-wrap.is-open{opacity:1}
+
+/* An element with its own backdrop-filter escapes the scrim's blur and
+   paints on top of it. The topbar is the only one that overlaps a sheet,
+   so it stands down while one is open. */
+body.sheet-open .tb{backdrop-filter:none;-webkit-backdrop-filter:none;z-index:1}
+body.sheet-open .sb{z-index:1}
 
 .sheet{width:min(1080px,100%);max-height:100%;display:flex;flex-direction:column;
   border-radius:12px;overflow:hidden;
@@ -874,7 +882,7 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
   transform:translateY(14px);opacity:0;
   transition:transform 260ms var(--e),opacity 220ms var(--e)}
 .sheet.wide{width:min(1240px,100%)}
-.sheet-wrap.in .sheet{transform:none;opacity:1}
+.sheet-wrap.is-open .sheet{transform:none;opacity:1}
 
 .sheet-h{display:flex;align-items:center;gap:14px;flex:none;
   padding:18px clamp(18px,2.4vw,24px);
@@ -1001,9 +1009,9 @@ th.stickr span{position:relative;z-index:2;display:inline-block}
   .ptile .t b{font-size:13px}
 
   /* sheets go full-bleed */
-  .sheet-wrap{padding:0;align-items:flex-end}
-  .sheet{width:100%;max-height:92vh;border-radius:12px 12px 0 0;
-    transform:translateY(30px)}
+  .sheet-wrap{padding:0;align-items:stretch;background:var(--card)}
+  .sheet{width:100%;height:100%;max-height:none;border-radius:0;
+    box-shadow:none;transform:translateY(18px)}
   .gbox{border-radius:8px}
   .sheet-duo{gap:12px}
   .sheet-h{padding:17px 18px}
