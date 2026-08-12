@@ -210,6 +210,25 @@ const PATHS: Record<string, React.ReactNode> = {
   ),
   circle: <circle cx="12" cy="12" r="8.5" />,
   filter: <path d="M3.5 5.5h17l-6.6 7.8V20l-3.8-2.2v-4.5z" />,
+  copy: (
+    <>
+      <rect x="9" y="9" width="11.5" height="11.5" rx="2.4" />
+      <path d="M15 6.2V5.4A2.4 2.4 0 0 0 12.6 3H5.4A2.4 2.4 0 0 0 3 5.4v7.2A2.4 2.4 0 0 0 5.4 15h.8" />
+    </>
+  ),
+  dots: (
+    <>
+      <circle cx="12" cy="5.2" r="1.7" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="18.8" r="1.7" fill="currentColor" stroke="none" />
+    </>
+  ),
+  sparkle: (
+    <>
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+      <path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof PATHS;

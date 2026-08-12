@@ -12,6 +12,7 @@ import {
   KV,
   Pagination,
   Sheet,
+  ScrollTable,
   Skeleton,
   Terminal,
 } from "@/components/ui";
@@ -163,7 +164,7 @@ export default function AuditLogsPage() {
           />
         ) : (
           <>
-            <div className="tw">
+            <ScrollTable>
               <table>
                 <thead>
                   <tr>
@@ -173,7 +174,7 @@ export default function AuditLogsPage() {
                     <th>Amount</th>
                     <th>Payload hash</th>
                     <th className="stickr" style={{ textAlign: "right" }}>
-                      View
+                      <span>View</span>
                     </th>
                   </tr>
                 </thead>
@@ -225,7 +226,7 @@ export default function AuditLogsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollTable>
             <Pagination page={page} limit={LIMIT} total={total} onPage={setPage} />
           </>
         )}

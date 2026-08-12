@@ -11,6 +11,7 @@ import {
   Field,
   KV,
   Sheet,
+  ScrollTable,
   Terminal,
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
@@ -370,7 +371,7 @@ export default function SimulationPage() {
           title="Demo scenarios"
           sub="The five the judges will see · all verified against production"
         />
-        <div className="tw">
+        <ScrollTable>
           <table>
             <thead>
               <tr>
@@ -380,7 +381,7 @@ export default function SimulationPage() {
                 <th>Amount</th>
                 <th>Expected</th>
                 <th className="stickr" style={{ textAlign: "right" }}>
-                  Load
+                  <span>Load</span>
                 </th>
               </tr>
             </thead>
@@ -427,13 +428,20 @@ export default function SimulationPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTable>
       </Card>
 
       <Sheet
         open={sheetOpen && !!result}
         onClose={() => setSheetOpen(false)}
         title="Simulation verdict"
+        tone={
+          result?.decision === "ALLOW"
+            ? "ok"
+            : result?.decision === "DENY"
+            ? "no"
+            : "hold"
+        }
         sub={
           result
             ? `${money(Number(amount) || 0)} to ${domain} · risk ${result.risk_score}/100`

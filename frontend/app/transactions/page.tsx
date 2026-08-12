@@ -15,6 +15,7 @@ import {
   Pagination,
   RiskBar,
   Sheet,
+  ScrollTable,
   Skeleton,
   Timeline,
   TimelineItem,
@@ -177,7 +178,7 @@ export default function TransactionsPage() {
           />
         ) : (
           <>
-            <div className="tw">
+            <ScrollTable>
               <table>
                 <thead>
                   <tr>
@@ -189,7 +190,7 @@ export default function TransactionsPage() {
                     <th>Verdict</th>
                     <th>When</th>
                     <th className="stickr" style={{ textAlign: "right" }}>
-                      View
+                      <span>View</span>
                     </th>
                   </tr>
                 </thead>
@@ -255,7 +256,7 @@ export default function TransactionsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollTable>
             <Pagination page={page} limit={LIMIT} total={total} onPage={setPage} />
           </>
         )}
@@ -265,6 +266,15 @@ export default function TransactionsPage() {
         open={!!detail}
         onClose={() => setSelected(null)}
         title={detail ? `${money(detail.amountUsd)} to ${detail.merchantDomain}` : "Decision"}
+        tone={
+          detail?.decision === "ALLOW"
+            ? "ok"
+            : detail?.decision === "DENY"
+            ? "no"
+            : detail
+            ? "hold"
+            : undefined
+        }
         sub={
           detail
             ? `${shortId(detail.id)} · ${detail.purpose || "no purpose given"}`
@@ -284,6 +294,28 @@ export default function TransactionsPage() {
                 </div>
               </div>
               <div className="gbox-b">
+                <div
+                  className={`verdict-hero ${
+                    detail.decision === "ALLOW"
+                      ? "vh-ok"
+                      : detail.decision === "DENY"
+                      ? "vh-no"
+                      : "vh-hold"
+                  }`}
+                  style={{ marginBottom: 16 }}
+                >
+                  <Icon
+                    name={
+                      detail.decision === "ALLOW"
+                        ? "check"
+                        : detail.decision === "DENY"
+                        ? "x"
+                        : "clock"
+                    }
+                  />
+                  <b>{decisionLabel(detail.decision)}</b>
+                </div>
+
                 <KV k="Agent">{detail.agent?.name ?? shortId(detail.agentId)}</KV>
                 <KV k="Merchant">
                   <span className="mono">{detail.merchantDomain}</span>
@@ -320,14 +352,7 @@ export default function TransactionsPage() {
                 </KV>
                 {(detail.reasonCodes ?? []).length ? (
                   <KV k="Reason codes">
-                    <span
-                      style={{
-                        display: "flex",
-                        gap: 6,
-                        flexWrap: "wrap",
-                        justifyContent: "flex-end",
-                      }}
-                    >
+                    <span className="codes">
                       {(detail.reasonCodes ?? []).map((c) => (
                         <span className="code" key={c}>
                           {c}

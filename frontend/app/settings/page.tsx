@@ -12,6 +12,7 @@ import {
   Field,
   KV,
   Skeleton,
+  ScrollTable,
   Switch,
   SwitchRow,
 } from "@/components/ui";
@@ -223,7 +224,7 @@ export default function SettingsPage() {
                 <Skeleton lines={4} height={18} />
               </CardBody>
             ) : (
-              <div className="tw">
+              <ScrollTable>
                 <table style={{ minWidth: 520 }}>
                   <thead>
                     <tr>
@@ -253,7 +254,7 @@ export default function SettingsPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </ScrollTable>
             )}
           </Card>
 
