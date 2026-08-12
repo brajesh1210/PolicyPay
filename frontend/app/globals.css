@@ -156,8 +156,8 @@ button{background:none;border:none;cursor:pointer}
 .icb .dot{position:absolute;top:9px;right:10px;width:8px;height:8px;border-radius:50%;
   background:var(--bad);border:1.8px solid var(--card)}
 .body{flex:1;padding:6px clamp(18px,2.4vw,34px) 60px}
-.scrim{position:fixed;inset:0;z-index:55;background:rgba(24,35,56,.4);
-  backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity var(--t) var(--e)}
+.scrim{position:fixed;inset:0;z-index:55;background:rgba(24,35,56,.34);
+  opacity:0;pointer-events:none;transition:opacity var(--t) var(--e)}
 .scrim.on{opacity:1;pointer-events:auto}
 
 /* ── buttons ─────────────────────────────── */
@@ -360,7 +360,11 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .kv{display:flex;align-items:flex-start;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);font-size:13.5px}
 .kv:last-child{border-bottom:none}
 .kv span{color:var(--ink-3);flex:none;width:150px;font-size:12.5px;font-weight:600}
-.kv b{font-weight:700;text-align:right;margin-left:auto;word-break:break-word}
+.kv b{font-weight:700;text-align:right;margin-left:auto;word-break:break-word;min-width:0}
+/* a stack of codes should wrap as whole pills, never mid-word */
+.kv .codes{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:100%}
+.kv .codes .code{white-space:nowrap;word-break:normal;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;font-size:11px}
 
 .empty{text-align:center;padding:clamp(56px, 6vw, 80px) 20px}
 .empty .ic{width:66px;height:66px;border-radius:22px;background:var(--page);display:grid;
@@ -605,7 +609,9 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
   stroke-linecap:round;stroke-linejoin:round}
 .iact:hover{color:var(--b-600);transform:translateY(-2px);box-shadow:var(--nm)}
 .iact:active{transform:none;box-shadow:var(--nm-in)}
-.iact.no:hover{color:var(--bad)}
+/* a destructive row action reads red at rest, not only on hover */
+.iact.no{color:var(--bad)}
+.iact.no:hover{color:var(--bad);background:var(--bad-bg)}
 
 /* merchant / agent identity cell */
 .idc{display:flex;align-items:center;gap:12px;min-width:0}
@@ -661,7 +667,7 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .apc .mrow .t span{display:block;font-size:12px;color:var(--ink-3);margin-top:1px}
 .apc .amt{display:flex;align-items:center;gap:12px;margin-top:18px}
 .apc .amt b{font-size:32px;font-weight:800;letter-spacing:-1.6px;line-height:1}
-.apc .why{margin-top:16px;padding:13px 15px;border-radius:14px;background:var(--b-100);
+.apc .why{margin-top:16px;padding:13px 15px;border-radius:10px;background:var(--b-100);
   display:flex;gap:10px}
 .apc .why svg{width:15px;height:15px;flex:none;margin-top:2px;stroke:var(--b-600);fill:none;
   stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -707,7 +713,7 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .chk .nm{flex:1;min-width:0;font-size:13.5px;font-weight:600}
 .chk .vd{font-size:11.5px;font-weight:800;letter-spacing:.5px;flex:none}
 .verdict-hero{display:flex;align-items:center;justify-content:center;gap:14px;
-  padding:26px;border-radius:var(--r-lg);margin-bottom:6px}
+  padding:24px;border-radius:10px;margin-bottom:6px}
 .verdict-hero svg{width:34px;height:34px;fill:none;stroke-width:2.4;
   stroke-linecap:round;stroke-linejoin:round}
 .verdict-hero b{font-size:27px;font-weight:800;letter-spacing:-1px}
@@ -855,35 +861,34 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .sheet-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;
   z-index:120;display:flex;align-items:center;
   justify-content:center;padding:clamp(14px,3vw,40px);
-  background:rgba(24,35,56,.42);
-  backdrop-filter:blur(7px) saturate(130%);-webkit-backdrop-filter:blur(7px) saturate(130%);
-  opacity:0;transition:opacity 240ms var(--e);overflow-y:auto}
+  background:rgba(232,236,244,.9);
+  opacity:0;transition:opacity 220ms var(--e);overflow-y:auto}
 .sheet-wrap.in{opacity:1}
 
 .sheet{width:min(1080px,100%);max-height:100%;display:flex;flex-direction:column;
-  border-radius:26px;overflow:hidden;
-  background:linear-gradient(150deg,rgba(255,255,255,.96),rgba(248,250,254,.93));
-  backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
-  box-shadow:0 30px 70px rgba(16,26,52,.3),
-             inset 0 0 0 1px rgba(255,255,255,.85),
-             inset 0 1px 0 rgba(255,255,255,1);
-  transform:translateY(22px) scale(.975);opacity:0;
-  transition:transform 320ms var(--e),opacity 260ms var(--e)}
+  border-radius:12px;overflow:hidden;
+  background:var(--card);
+  box-shadow:0 18px 46px rgba(24,35,56,.16),
+             0 2px 8px rgba(24,35,56,.06),
+             0 0 0 1px rgba(77,141,246,.14);
+  transform:translateY(14px);opacity:0;
+  transition:transform 260ms var(--e),opacity 220ms var(--e)}
 .sheet.wide{width:min(1240px,100%)}
 .sheet-wrap.in .sheet{transform:none;opacity:1}
 
 .sheet-h{display:flex;align-items:center;gap:14px;flex:none;
-  padding:20px clamp(18px,2.4vw,26px);
-  border-bottom:1px solid rgba(77,141,246,.16)}
+  padding:18px clamp(18px,2.4vw,24px);
+  background:var(--tint);
+  border-bottom:1px solid var(--line)}
 .sheet-h .t{min-width:0;flex:1}
 .sheet-h .t b{display:block;font-size:17px;font-weight:800;letter-spacing:-.45px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sheet-h .t span{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sheet-x{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;
-  background:var(--card);box-shadow:var(--nm-sm);color:var(--ink-2);
-  transition:all var(--t) var(--e)}
-.sheet-x:hover{color:var(--bad);transform:rotate(90deg);box-shadow:var(--nm)}
+.sheet-x{width:38px;height:38px;border-radius:10px;flex:none;display:grid;place-items:center;
+  background:var(--card);box-shadow:0 0 0 1px var(--line);color:var(--ink-3);
+  transition:color var(--t) var(--e),background var(--t) var(--e),box-shadow var(--t) var(--e)}
+.sheet-x:hover{color:var(--bad);background:var(--bad-bg);box-shadow:0 0 0 1px #F5CFCE}
 .sheet-x svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.4;
   stroke-linecap:round;stroke-linejoin:round}
 .sheet-b{flex:1;min-height:0;overflow-y:auto;padding:clamp(16px,2.2vw,24px);
@@ -892,11 +897,10 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 /* two glass boxes side by side inside a sheet */
 .sheet-duo{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,1.8vw,20px);align-items:start}
 .sheet-duo > *{min-width:0}
-.gbox{border-radius:20px;overflow:hidden;
-  background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(244,246,251,.82));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),
-             6px 8px 22px rgba(163,177,201,.28)}
-.gbox-h{padding:15px 18px;border-bottom:1px solid rgba(77,141,246,.14);
+.gbox{border-radius:10px;overflow:hidden;
+  background:var(--card);
+  box-shadow:0 0 0 1px var(--line), 0 2px 6px rgba(24,35,56,.05)}
+.gbox-h{padding:14px 17px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:10px}
 .gbox-h b{font-size:14.5px;font-weight:800;letter-spacing:-.3px;flex:1;min-width:0}
 .gbox-h .r{margin-left:auto;display:flex;gap:8px;align-items:center;flex:none}
@@ -904,25 +908,59 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .gbox-b.flush{padding:0}
 @media(max-width:860px){ .sheet-duo{grid-template-columns:1fr} }
 
-/* the row action rail that stays glued to the right edge on mobile */
+/* ── the floating action cell ──────────────────────────────────
+   The View button rides above the row instead of sitting in a solid
+   bar. Whatever scrolls under it is blurred, so nothing looks cut off.
+   Once the table is scrolled all the way right there is nothing left
+   underneath, so it settles back into the row on its own.
+   ───────────────────────────────────────────────────────────── */
 .tw{position:relative}
+table{position:relative}
 th.stickr, td.stickr{position:sticky;right:0;z-index:3;
-  background:var(--tint);width:1%;white-space:nowrap;
-  box-shadow:-10px 0 12px -8px rgba(24,35,56,.18)}
-tbody tr:hover td.stickr{background:var(--card)}
-th.stickr{z-index:4}
+  width:1%;white-space:nowrap;background:transparent;padding-left:6px;padding-right:10px}
+th.stickr{z-index:4;background:transparent}
+
+/* the frosted pane sits behind the button, never over the text */
+td.stickr::before, th.stickr::before{content:'';position:absolute;
+  top:0;bottom:0;left:0;right:-14px;
+  pointer-events:none;
+  -webkit-backdrop-filter:blur(9px) saturate(140%);
+  backdrop-filter:blur(9px) saturate(140%);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 24px);
+  mask-image:linear-gradient(90deg,transparent 0,#000 24px);
+  transition:opacity 200ms var(--e)}
+/* a second, opaque wash so a label never shows through the word "View" */
+td.stickr::after, th.stickr::after{content:'';position:absolute;
+  top:0;bottom:0;left:0;right:-14px;
+  pointer-events:none;
+  background:linear-gradient(90deg,rgba(244,246,251,0) 0,
+                                    rgba(244,246,251,.82) 26px,
+                                    rgba(244,246,251,.95) 100%);
+  transition:opacity 200ms var(--e)}
+tbody tr:hover td.stickr::after{
+  background:linear-gradient(90deg,rgba(255,255,255,0) 0,
+                                    rgba(255,255,255,.85) 26px,
+                                    rgba(255,255,255,.97) 100%)}
+td.stickr > *, th.stickr > *{position:relative;z-index:2}
+th.stickr span{position:relative;z-index:2;display:inline-block}
+
+/* scrolled to the end — drop the frost, the button is just a button */
+.tw.at-end td.stickr::before, .tw.at-end th.stickr::before,
+.tw.at-end td.stickr::after,  .tw.at-end th.stickr::after{opacity:0}
+.tw.at-end td.stickr, .tw.at-end th.stickr{position:static}
 
 /* ══ mobile: make every page actually usable ══════════════════ */
 @media(max-width:760px){
-  /* the page title was being clipped */
-  .tb{min-height:0;flex-wrap:wrap;padding:12px 16px 12px;row-gap:10px}
-  .tb-h{order:2;flex-basis:100%;min-width:0}
-  .tb-h h1{white-space:normal;overflow:visible;font-size:22px;line-height:1.22}
-  .tb-h p{display:block;white-space:normal;font-size:12px;margin-top:3px}
-  .burger{order:1}
-  .tb-r{order:1;margin-left:auto}
+  /* one line: burger · title · kebab */
+  .tb{min-height:0;flex-wrap:nowrap;padding:11px 14px;gap:11px}
+  .tb-h{flex:1;min-width:0}
+  .tb-h h1{font-size:19px;line-height:1.25;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .tb-h p{display:none}
   .icb{width:40px;height:40px}
   .icb svg{width:16px;height:16px}
+  .burger{width:40px;height:40px;border-radius:13px}
+  .burger i{left:11px}
 
   /* page headers stack instead of squeezing */
   .phead{flex-direction:column;align-items:stretch;gap:10px}
@@ -964,8 +1002,10 @@ th.stickr{z-index:4}
 
   /* sheets go full-bleed */
   .sheet-wrap{padding:0;align-items:flex-end}
-  .sheet{width:100%;max-height:92vh;border-radius:24px 24px 0 0;
-    transform:translateY(40px)}
+  .sheet{width:100%;max-height:92vh;border-radius:12px 12px 0 0;
+    transform:translateY(30px)}
+  .gbox{border-radius:8px}
+  .sheet-duo{gap:12px}
   .sheet-h{padding:17px 18px}
   .sheet-b{padding:16px}
 
@@ -1034,4 +1074,137 @@ tbody tr.justloaded{animation:flashrow 1.4s var(--e)}
 
 @media (prefers-reduced-motion: reduce){
   .btn.nudging,.nudge-wrap::after,.hintline svg{animation:none}
+}
+
+
+/* ══ the kebab menu on a phone ════════════════════════════════ */
+.wide-only{display:grid}
+.narrow-only{display:none}
+@media(max-width:760px){
+  .wide-only{display:none !important}
+  .narrow-only{display:block}
+}
+
+.kebab-wrap{position:relative}
+@keyframes kebabin{from{opacity:0;transform:translateY(-8px) scale(.96)}
+                   to{opacity:1;transform:none}}
+.kebab{position:absolute;top:calc(100% + 10px);right:0;z-index:80;
+  min-width:196px;padding:8px;border-radius:20px;
+  background:linear-gradient(150deg,rgba(255,255,255,.97),rgba(248,250,254,.94));
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(20px) saturate(180%);
+  box-shadow:0 20px 44px rgba(16,26,52,.22),
+             inset 0 0 0 1px rgba(255,255,255,.9);
+  animation:kebabin 200ms var(--e) both}
+.kebab a, .kebab button{display:flex;align-items:center;gap:12px;width:100%;
+  padding:12px 14px;border-radius:14px;font-size:14px;font-weight:600;
+  color:var(--ink-2);text-align:left;
+  transition:background var(--t) var(--e),color var(--t) var(--e)}
+.kebab a:hover, .kebab button:hover{background:var(--b-100);color:var(--b-700)}
+.kebab a svg, .kebab button svg{width:17px;height:17px;flex:none;stroke:currentColor;
+  fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.kebab span{flex:1;min-width:0}
+.kebab .pill{flex:none;font-size:10.5px;font-weight:800;padding:2px 8px;
+  border-radius:99px;background:var(--bad);color:#fff;min-width:21px;text-align:center}
+.kebab button.out:hover{background:var(--bad-bg);color:var(--bad)}
+
+/* ══ verdict reactions ════════════════════════════════════════
+   A verdict should feel like something happened. The sheet tints
+   itself to the answer, the hero pulses once, and a soft wash of
+   colour spreads behind it.
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes vwash{
+  0%  {opacity:0;transform:scale(.6)}
+  45% {opacity:1}
+  100%{opacity:0;transform:scale(1.9)}
+}
+@keyframes vpop{
+  0%  {transform:scale(.9);opacity:0}
+  55% {transform:scale(1.03)}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes vglint{
+  0%  {transform:translateX(-120%)}
+  100%{transform:translateX(220%)}
+}
+@keyframes vshake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-5px)}
+  40%{transform:translateX(5px)}
+  60%{transform:translateX(-3px)}
+  80%{transform:translateX(3px)}
+}
+@keyframes vtick{
+  0%  {stroke-dashoffset:34}
+  100%{stroke-dashoffset:0}
+}
+
+.verdict-hero{position:relative;overflow:hidden;animation:vpop 420ms var(--e) both}
+/* the wash that spreads out from the middle */
+.verdict-hero::before{content:'';position:absolute;left:50%;top:50%;
+  width:150%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  pointer-events:none;animation:vwash 1100ms var(--e) both}
+/* the light that sweeps across once */
+.verdict-hero::after{content:'';position:absolute;top:0;bottom:0;width:38%;
+  pointer-events:none;transform:translateX(-120%);
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.72),transparent);
+  animation:vglint 1000ms var(--e) 260ms both}
+
+.vh-ok::before{background:radial-gradient(circle,rgba(18,161,80,.42),rgba(18,161,80,0) 66%)}
+.vh-no::before{background:radial-gradient(circle,rgba(229,72,77,.42),rgba(229,72,77,0) 66%)}
+.vh-hold::before{background:radial-gradient(circle,rgba(223,144,8,.42),rgba(223,144,8,0) 66%)}
+
+.vh-ok{box-shadow:0 0 0 1px rgba(18,161,80,.22), 0 12px 34px rgba(18,161,80,.22)}
+.vh-no{box-shadow:0 0 0 1px rgba(229,72,77,.22), 0 12px 34px rgba(229,72,77,.22);
+  animation:vpop 420ms var(--e) both, vshake 460ms var(--e) 380ms}
+.vh-hold{box-shadow:0 0 0 1px rgba(223,144,8,.22), 0 12px 34px rgba(223,144,8,.22)}
+
+/* the glyph draws itself in */
+.verdict-hero svg{position:relative;z-index:1;
+  stroke-dasharray:34;animation:vtick 520ms var(--e) 160ms both}
+.verdict-hero b{position:relative;z-index:1}
+
+/* the whole sheet picks up the colour of the answer */
+.sheet.v-ok  {box-shadow:0 18px 46px rgba(24,35,56,.16),
+              0 2px 8px rgba(24,35,56,.06),
+              0 0 0 1px rgba(18,161,80,.3)}
+.sheet.v-no  {box-shadow:0 18px 46px rgba(24,35,56,.16),
+              0 2px 8px rgba(24,35,56,.06),
+              0 0 0 1px rgba(229,72,77,.3)}
+.sheet.v-hold{box-shadow:0 18px 46px rgba(24,35,56,.16),
+              0 2px 8px rgba(24,35,56,.06),
+              0 0 0 1px rgba(223,144,8,.3)}
+
+/* the checks tick down one after another instead of all at once */
+@keyframes chkin{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.chk{animation:chkin 300ms var(--e) both}
+.chk:nth-child(1){animation-delay:.28s}
+.chk:nth-child(2){animation-delay:.34s}
+.chk:nth-child(3){animation-delay:.40s}
+.chk:nth-child(4){animation-delay:.46s}
+.chk:nth-child(5){animation-delay:.52s}
+.chk:nth-child(6){animation-delay:.58s}
+.chk:nth-child(7){animation-delay:.64s}
+.chk:nth-child(8){animation-delay:.70s}
+
+/* approvals: the card reacts when you decide */
+@keyframes cardgo{
+  0%  {transform:none;opacity:1}
+  35% {transform:scale(1.012)}
+  100%{transform:scale(.94) translateY(-10px);opacity:0}
+}
+.apc.deciding-ok{animation:cardgo 620ms var(--e) both;
+  box-shadow:0 0 0 1px rgba(18,161,80,.4), 0 14px 40px rgba(18,161,80,.26)}
+.apc.deciding-no{animation:cardgo 620ms var(--e) both;
+  box-shadow:0 0 0 1px rgba(229,72,77,.4), 0 14px 40px rgba(229,72,77,.26)}
+
+/* the amount counts as the eye lands on it */
+@keyframes amtin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.apc .amt b{animation:amtin 340ms var(--e) both}
+
+@media (prefers-reduced-motion: reduce){
+  .verdict-hero,.verdict-hero::before,.verdict-hero::after,.verdict-hero svg,
+  .chk,.apc .amt b,.apc.deciding-ok,.apc.deciding-no{animation:none !important}
+  .verdict-hero svg{stroke-dasharray:none}
 }

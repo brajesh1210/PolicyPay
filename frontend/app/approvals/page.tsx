@@ -32,6 +32,9 @@ export default function ApprovalsPage() {
   const money = useMoney();
   const { data, loading, error, reload } = useApi<Approval[]>("/v1/approvals");
   const [busy, setBusy] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState<{ id: string; kind: "approve" | "reject" } | null>(
+    null
+  );
 
   const all = Array.isArray(data) ? data : [];
   const pending = all.filter((a) => a.status === "PENDING");
@@ -44,7 +47,12 @@ export default function ApprovalsPage() {
         note: kind === "approve" ? "Approved from the dashboard" : "Rejected from the dashboard",
       });
       toast.success(kind === "approve" ? "Payment approved" : "Payment rejected");
-      reload();
+      // let the card play its exit before the list refreshes under it
+      setLeaving({ id, kind });
+      window.setTimeout(() => {
+        setLeaving(null);
+        reload();
+      }, 620);
     } catch (e: any) {
       toast.error(e?.message || `Could not ${kind} this payment`);
     } finally {
@@ -100,7 +108,16 @@ export default function ApprovalsPage() {
                 const tx = a.transaction;
                 const score = tx?.riskScore ?? 0;
                 return (
-                  <article className="apc" key={a.id}>
+                  <article
+                    className={`apc${
+                      leaving?.id === a.id
+                        ? leaving.kind === "approve"
+                          ? " deciding-ok"
+                          : " deciding-no"
+                        : ""
+                    }`}
+                    key={a.id}
+                  >
                     <div className="who-r">
                       <span className="av">{initials(a.agent?.name)}</span>
                       <span className="t">

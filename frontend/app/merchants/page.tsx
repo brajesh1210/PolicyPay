@@ -13,6 +13,7 @@ import {
   Field,
   KV,
   Skeleton,
+  ScrollTable,
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
 import { apiSend } from "@/lib/api";
@@ -269,7 +270,7 @@ export default function MerchantsPage() {
             }
           />
         ) : (
-          <div className="tw">
+          <ScrollTable>
             <table>
               <thead>
                 <tr>
@@ -279,7 +280,7 @@ export default function MerchantsPage() {
                   <th>Risk added</th>
                   <th>Date Added</th>
                   <th className="stickr" style={{ textAlign: "right" }}>
-                    Actions
+                    <span>Actions</span>
                   </th>
                 </tr>
               </thead>
@@ -332,7 +333,7 @@ export default function MerchantsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollTable>
         )}
       </Card>
 

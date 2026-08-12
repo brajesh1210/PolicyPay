@@ -62,13 +62,33 @@ export default function AppShell({
   const pathname = usePathname();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
   const counts = useCounts();
 
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
     close();
+    setMenu(false);
   }, [pathname, close]);
+
+  // click anywhere else, or press Escape, and the kebab closes
+  useEffect(() => {
+    if (!menu) return;
+    function onDown(e: MouseEvent) {
+      const t = e.target as HTMLElement;
+      if (!t.closest(".kebab-wrap")) setMenu(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenu(false);
+    }
+    window.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menu]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -165,20 +185,61 @@ export default function AppShell({
           </div>
 
           <div className="tb-r">
-            <Link className="icb" href="/alerts" aria-label="Alerts">
+            <Link className="icb wide-only" href="/alerts" aria-label="Alerts">
               <Icon name="bell" />
               {counts.alerts > 0 ? <span className="dot" /> : null}
             </Link>
-            <Link className="icb" href="/settings" aria-label="Settings">
+            <Link className="icb wide-only" href="/settings" aria-label="Settings">
               <Icon name="cog" />
             </Link>
             <button
-              className="icb"
+              className="icb wide-only"
               aria-label="Sign out"
               onClick={() => signOut({ callbackUrl: "/landing" })}
             >
               <Icon name="logout" />
             </button>
+
+            {/* on a phone the three collapse into one kebab */}
+            <div className="kebab-wrap narrow-only">
+              <button
+                className="icb"
+                aria-label="More"
+                aria-haspopup="true"
+                aria-expanded={menu}
+                onClick={() => setMenu((v) => !v)}
+              >
+                <Icon name="dots" />
+                {counts.alerts > 0 && !menu ? <span className="dot" /> : null}
+              </button>
+
+              {menu ? (
+                <div className="kebab" role="menu">
+                  <Link href="/alerts" role="menuitem" onClick={() => setMenu(false)}>
+                    <Icon name="bell" />
+                    <span>Alerts</span>
+                    {counts.alerts > 0 ? (
+                      <span className="pill">{counts.alerts}</span>
+                    ) : null}
+                  </Link>
+                  <Link href="/settings" role="menuitem" onClick={() => setMenu(false)}>
+                    <Icon name="cog" />
+                    <span>Settings</span>
+                  </Link>
+                  <button
+                    role="menuitem"
+                    className="out"
+                    onClick={() => {
+                      setMenu(false);
+                      signOut({ callbackUrl: "/landing" });
+                    }}
+                  >
+                    <Icon name="logout" />
+                    <span>Sign out</span>
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </header>
 

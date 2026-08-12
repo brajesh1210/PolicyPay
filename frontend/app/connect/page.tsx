@@ -64,7 +64,7 @@ function Snippet({
       <div className="snip-b">
         <pre>{code}</pre>
         <button className="snip-cp" onClick={() => copy(code)} aria-label="Copy code">
-          <Icon name="dl" />
+          <Icon name="copy" />
         </button>
       </div>
     </div>
@@ -350,7 +350,7 @@ if (!ok.allowed) {
                     <Button
                       variant="p"
                       sm
-                      icon="dl"
+                      icon="copy"
                       onClick={() => copy(fresh.key, "Key copied")}
                     >
                       Copy
@@ -536,7 +536,7 @@ if (!ok.allowed) {
                 <Button
                   variant="s"
                   sm
-                  icon="dl"
+                  icon="copy"
                   style={{ marginTop: 16 }}
                   onClick={() => copy(agentId, "Agent id copied")}
                   disabled={!agentId}

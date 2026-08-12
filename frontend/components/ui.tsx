@@ -560,6 +560,7 @@ export function Sheet({
   sub,
   children,
   wide,
+  tone,
 }: {
   open: boolean;
   onClose: () => void;
@@ -567,6 +568,8 @@ export function Sheet({
   sub?: string;
   children: React.ReactNode;
   wide?: boolean;
+  /** tints the whole panel to match a verdict */
+  tone?: "ok" | "no" | "hold";
 }) {
   const [shown, setShown] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
@@ -610,7 +613,9 @@ export function Sheet({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={`sheet${wide ? " wide" : ""}`}>
+      <div
+        className={`sheet${wide ? " wide" : ""}${tone ? ` v-${tone}` : ""}`}
+      >
         <div className="sheet-h">
           <div className="t">
             <b>{title}</b>
@@ -624,5 +629,46 @@ export function Sheet({
       </div>
     </div>,
     document.body
+  );
+}
+
+/* ── ScrollTable ──────────────────────────────
+   Wraps a table and watches how far it is scrolled sideways. When the
+   user reaches the right edge there is nothing hiding under the action
+   column any more, so `at-end` drops the frosted pane and the button
+   sits back in the row like a normal cell.
+   ─────────────────────────────────────────── */
+export function ScrollTable({ children }: { children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [atEnd, setAtEnd] = React.useState(true);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    function check() {
+      const n = ref.current;
+      if (!n) return;
+      // 2px of slack so a fractional scroll width still counts as "done"
+      const done = n.scrollLeft + n.clientWidth >= n.scrollWidth - 2;
+      setAtEnd(done);
+    }
+
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+
+    return () => {
+      el.removeEventListener("scroll", check);
+      ro.disconnect();
+    };
+  }, [children]);
+
+  return (
+    <div className={`tw${atEnd ? " at-end" : ""}`} ref={ref}>
+      {children}
+    </div>
   );
 }

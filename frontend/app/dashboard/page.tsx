@@ -13,6 +13,7 @@ import {
   ErrorState,
   RiskBar,
   Skeleton,
+  ScrollTable,
   StatCard,
   Switch,
 } from "@/components/ui";
@@ -423,7 +424,7 @@ export default function DashboardPage() {
             desc="Once an agent asks to pay, it shows up here instantly."
           />
         ) : (
-          <div className="tw">
+          <ScrollTable>
             <table>
               <thead>
                 <tr>
@@ -468,7 +469,7 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollTable>
         )}
       </Card>
 
