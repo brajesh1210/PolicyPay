@@ -53,26 +53,6 @@ export function useLanding() {
     onScroll();
     cleanups.push(() => window.removeEventListener("scroll", onScroll));
 
-    /* ── mobile sheet ── */
-    const burger = document.getElementById("burger");
-    const sheet = document.getElementById("sheet");
-    const onBurger = () => {
-      const open = sheet?.classList.toggle("open");
-      burger?.setAttribute("aria-expanded", open ? "true" : "false");
-      burger?.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-    };
-    burger?.addEventListener("click", onBurger);
-    cleanups.push(() => burger?.removeEventListener("click", onBurger));
-
-    const closeSheet = () => {
-      sheet?.classList.remove("open");
-      burger?.setAttribute("aria-expanded", "false");
-    };
-    sheet?.querySelectorAll("a").forEach((a) => {
-      a.addEventListener("click", closeSheet);
-      cleanups.push(() => a.removeEventListener("click", closeSheet));
-    });
-
     /* ── smooth anchor scroll that clears the fixed nav ── */
     document.querySelectorAll<HTMLAnchorElement>('.lp a[href^="#"]').forEach((a) => {
       const handler = (e: Event) => {

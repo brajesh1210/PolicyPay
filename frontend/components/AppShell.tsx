@@ -65,6 +65,10 @@ export default function AppShell({
   const [menu, setMenu] = useState(false);
   const counts = useCounts();
 
+  function leave() {
+    signOut({ callbackUrl: "/landing" });
+  }
+
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
@@ -72,7 +76,6 @@ export default function AppShell({
     setMenu(false);
   }, [pathname, close]);
 
-  // click anywhere else, or press Escape, and the kebab closes
   useEffect(() => {
     if (!menu) return;
     function onDown(e: MouseEvent) {
@@ -106,6 +109,21 @@ export default function AppShell({
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  useEffect(() => {
+    const until = session?.stayUntil;
+    if (!until) return;
+    const ms = Number(until) - Date.now();
+    if (ms <= 0) {
+      signOut({ callbackUrl: "/login" });
+      return;
+    }
+    const t = window.setTimeout(() => {
+      fetch("/api/auth/remember", { method: "DELETE" }).catch(() => null);
+      signOut({ callbackUrl: "/login" });
+    }, ms);
+    return () => window.clearTimeout(t);
+  }, [session?.stayUntil]);
 
   const badgeFor = (b?: "approvals" | "alerts") => {
     if (!b) return null;
@@ -192,15 +210,10 @@ export default function AppShell({
             <Link className="icb wide-only" href="/settings" aria-label="Settings">
               <Icon name="cog" />
             </Link>
-            <button
-              className="icb wide-only"
-              aria-label="Sign out"
-              onClick={() => signOut({ callbackUrl: "/landing" })}
-            >
+            <button className="icb wide-only" aria-label="Sign out" onClick={leave}>
               <Icon name="logout" />
             </button>
 
-            {/* on a phone the three collapse into one kebab */}
             <div className="kebab-wrap narrow-only">
               <button
                 className="icb"
@@ -231,7 +244,7 @@ export default function AppShell({
                     className="out"
                     onClick={() => {
                       setMenu(false);
-                      signOut({ callbackUrl: "/landing" });
+                      leave();
                     }}
                   >
                     <Icon name="logout" />

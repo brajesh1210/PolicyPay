@@ -13,6 +13,7 @@ router.post("/from-template", (req, res, next) => policiesController.createFromT
 
 router.get("/:id", (req, res, next) => policiesController.getById(req, res, next));
 router.put("/:id", (req, res, next) => policiesController.update(req, res, next));
+router.patch("/:id", (req, res, next) => policiesController.update(req, res, next));
 router.patch("/:id/toggle", (req, res, next) => policiesController.toggle(req, res, next));
 router.delete("/:id", (req, res, next) => policiesController.delete(req, res, next));
 
