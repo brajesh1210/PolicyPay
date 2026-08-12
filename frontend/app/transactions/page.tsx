@@ -14,6 +14,7 @@ import {
   KV,
   Pagination,
   RiskBar,
+  Sheet,
   Skeleton,
   Timeline,
   TimelineItem,
@@ -53,7 +54,7 @@ export default function TransactionsPage() {
     ? all.filter((t) => (t.merchantDomain ?? "").toLowerCase().includes(needle))
     : all;
   const total = needle ? rows.length : meta?.total ?? rows.length;
-  const detail = selected ?? rows[0] ?? null;
+  const detail = selected;
 
   /* the visible page, as a CSV the judges can open in Excel */
   function exportCsv() {
@@ -187,12 +188,18 @@ export default function TransactionsPage() {
                     <th>Risk</th>
                     <th>Verdict</th>
                     <th>When</th>
-                    <th />
+                    <th className="stickr" style={{ textAlign: "right" }}>
+                      View
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((t) => (
-                    <tr key={t.id}>
+                    <tr
+                      key={t.id}
+                      className="rowlink"
+                      onClick={() => setSelected(t)}
+                    >
                       <td className="mono" style={{ fontSize: 12, color: "var(--ink-3)" }}>
                         {shortId(t.id)}
                       </td>
@@ -229,11 +236,19 @@ export default function TransactionsPage() {
                       <td style={{ color: "var(--ink-3)", fontSize: 12.5, whiteSpace: "nowrap" }}>
                         {ago(t.createdAt)}
                       </td>
-                      <td>
+                      <td className="stickr">
                         <div className="act">
-                          <Button variant="s" sm icon="eye" onClick={() => setSelected(t)}>
-                            View
-                          </Button>
+                          <button
+                            className="iact"
+                            aria-label="View this decision"
+                            title="View"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelected(t);
+                            }}
+                          >
+                            <Icon name="eye" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -246,82 +261,121 @@ export default function TransactionsPage() {
         )}
       </Card>
 
-      {detail ? (
-        <div className="split mt">
-          <Card>
-            <CardHeader
-              title="Decision detail"
-              sub={`${shortId(detail.id)} · ${
-                detail.purpose ? detail.purpose.slice(0, 46) : "no purpose given"
-              }`}
-              right={
-                <span className={decisionTagClass(detail.decision)}>
-                  {decisionLabel(detail.decision)}
-                </span>
-              }
-            />
-            <CardBody>
-              <KV k="Agent">{detail.agent?.name ?? shortId(detail.agentId)}</KV>
-              <KV k="Merchant">
-                <span className="mono">{detail.merchantDomain}</span>
-              </KV>
-              <KV k="Amount">
-                <span className="num">
-                  {money(detail.amountUsd)} {detail.currency}
-                </span>
-              </KV>
-              {detail.purpose ? (
-                <KV k="Purpose">
+      <Sheet
+        open={!!detail}
+        onClose={() => setSelected(null)}
+        title={detail ? `${money(detail.amountUsd)} to ${detail.merchantDomain}` : "Decision"}
+        sub={
+          detail
+            ? `${shortId(detail.id)} · ${detail.purpose || "no purpose given"}`
+            : undefined
+        }
+        wide
+      >
+        {detail ? (
+          <div className="sheet-duo">
+            <div className="gbox">
+              <div className="gbox-h">
+                <b>Decision detail</b>
+                <div className="r">
+                  <span className={decisionTagClass(detail.decision)}>
+                    {decisionLabel(detail.decision)}
+                  </span>
+                </div>
+              </div>
+              <div className="gbox-b">
+                <KV k="Agent">{detail.agent?.name ?? shortId(detail.agentId)}</KV>
+                <KV k="Merchant">
+                  <span className="mono">{detail.merchantDomain}</span>
+                </KV>
+                <KV k="Amount">
+                  <span className="num">
+                    {money(detail.amountUsd)} {detail.currency}
+                  </span>
+                </KV>
+                {detail.purpose ? (
+                  <KV k="Purpose">
+                    <span
+                      style={{
+                        color: detail.decision === "DENY" ? "var(--bad)" : undefined,
+                      }}
+                    >
+                      {detail.purpose}
+                    </span>
+                  </KV>
+                ) : null}
+                <KV k="Risk score">
                   <span
                     style={{
-                      color: detail.decision === "DENY" ? "var(--bad)" : undefined,
+                      color:
+                        detail.riskScore >= 70
+                          ? "var(--bad)"
+                          : detail.riskScore >= 30
+                          ? "var(--warn)"
+                          : "var(--ok)",
                     }}
                   >
-                    {detail.purpose}
+                    {detail.riskScore} / 100
                   </span>
                 </KV>
-              ) : null}
-              <KV k="Risk score">
-                <span
-                  style={{
-                    color:
-                      detail.riskScore >= 70
-                        ? "var(--bad)"
-                        : detail.riskScore >= 30
-                        ? "#D97706"
-                        : "var(--ok)",
-                  }}
-                >
-                  {detail.riskScore} / 100
-                </span>
-              </KV>
-              <KV k="Reason codes">
-                {(detail.reasonCodes ?? []).map((c) => (
-                  <span key={c} style={{ display: "block" }}>
-                    {c}
-                  </span>
-                ))}
-              </KV>
-              {detail.idempotencyKey ? (
-                <KV k="Idempotency key">
-                  <span className="mono" style={{ fontSize: 12 }}>
-                    {shortId(detail.idempotencyKey, 14, 6)}
-                  </span>
-                </KV>
-              ) : null}
-              <KV k="Recorded">{istTime(detail.createdAt)} IST</KV>
-            </CardBody>
-          </Card>
+                {(detail.reasonCodes ?? []).length ? (
+                  <KV k="Reason codes">
+                    <span
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        flexWrap: "wrap",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      {(detail.reasonCodes ?? []).map((c) => (
+                        <span className="code" key={c}>
+                          {c}
+                        </span>
+                      ))}
+                    </span>
+                  </KV>
+                ) : null}
+                {detail.idempotencyKey ? (
+                  <KV k="Idempotency key">
+                    <span className="mono" style={{ fontSize: 12 }}>
+                      {shortId(detail.idempotencyKey, 14, 6)}
+                    </span>
+                  </KV>
+                ) : null}
+                <KV k="Recorded">{istTime(detail.createdAt)} IST</KV>
 
-          <Card>
-            <CardHeader
-              title="Checks that ran"
-              sub={`${(detail.policyChecks ?? []).length} checks, in order`}
-            />
-            <CardBody>
-              {(detail.policyChecks ?? []).length === 0 ? (
-                <EmptyState title="No check trace stored" desc="This record predates check logging." />
-              ) : (
+                {(detail.riskFactors ?? []).length > 0 ? (
+                  <div
+                    style={{
+                      marginTop: 14,
+                      paddingTop: 14,
+                      borderTop: "1px solid var(--line)",
+                    }}
+                  >
+                    <b style={{ fontSize: 12.5, fontWeight: 800 }}>
+                      What added risk
+                    </b>
+                    {(detail.riskFactors ?? []).map((f, i) => (
+                      <KV key={i} k={f.factor}>
+                        <span style={{ color: "var(--bad)" }}>+{f.points}</span>
+                      </KV>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="gbox">
+              <div className="gbox-h">
+                <b>Checks that ran</b>
+                <div className="r">
+                  <span className="tag t-info">
+                    {(detail.policyChecks ?? []).length} checks
+                  </span>
+                </div>
+              </div>
+              <div className="gbox-b">
                 <Timeline>
                   {(detail.policyChecks ?? []).map((c, i) => (
                     <TimelineItem
@@ -344,21 +398,12 @@ export default function TransactionsPage() {
                     time={istTime(detail.createdAt)}
                   />
                 </Timeline>
-              )}
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Sheet>
 
-              {(detail.riskFactors ?? []).length > 0 ? (
-                <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-                  {(detail.riskFactors ?? []).map((f, i) => (
-                    <KV key={i} k={f.factor}>
-                      <span style={{ color: "var(--bad)" }}>+{f.points}</span>
-                    </KV>
-                  ))}
-                </div>
-              ) : null}
-            </CardBody>
-          </Card>
-        </div>
-      ) : null}
     </AppShell>
   );
 }

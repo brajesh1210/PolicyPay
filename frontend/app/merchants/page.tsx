@@ -278,7 +278,9 @@ export default function MerchantsPage() {
                   <th>Category</th>
                   <th>Risk added</th>
                   <th>Date Added</th>
-                  <th style={{ textAlign: "right" }}>Actions</th>
+                  <th className="stickr" style={{ textAlign: "right" }}>
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -309,7 +311,7 @@ export default function MerchantsPage() {
                     <td className="fs-meta" style={{ whiteSpace: "nowrap" }}>
                       {istDateTime(m.createdAt)}
                     </td>
-                    <td>
+                    <td className="stickr">
                       <div className="act">
                         <button
                           className="iact no"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/AppShell";
 import Icon from "@/components/Icon";
 import {
@@ -8,9 +8,9 @@ import {
   Card,
   CardBody,
   CardHeader,
-  EmptyState,
   Field,
   KV,
+  Sheet,
   Terminal,
 } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
@@ -96,6 +96,19 @@ export default function SimulationPage() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<SimulateResult | null>(null);
 
+  // after a scenario is loaded we pulse the Run button until it is pressed
+  const [nudge, setNudge] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const formRef = useRef<HTMLSpanElement | null>(null);
+  const logRef = useRef<HTMLDivElement | null>(null);
+
+  // the pulse is a hint, not a nag — it stops on its own after 3s
+  useEffect(() => {
+    if (!nudge) return;
+    const t = window.setTimeout(() => setNudge(false), 3000);
+    return () => window.clearTimeout(t);
+  }, [nudge]);
+
   useEffect(() => {
     if (!agentId && (agents.data ?? []).length > 0) {
       const research = (agents.data ?? []).find((a) => a.name.includes("research"));
@@ -111,6 +124,11 @@ export default function SimulationPage() {
     setAmount(s.amount);
     setPurpose(s.purpose);
     setResult(null);
+    setSheetOpen(false);
+
+    // bring the form back into view, then draw the eye to Run
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setNudge(true);
   }
 
   async function run() {
@@ -119,6 +137,7 @@ export default function SimulationPage() {
       return;
     }
     setBusy(true);
+    setNudge(false);
     try {
       const m = (merchants.data ?? []).find((x) => x.domain === domain);
       const res = await apiSend<SimulateResult>("post", "/v1/simulate", {
@@ -130,7 +149,16 @@ export default function SimulationPage() {
         purpose,
       });
       setResult(res);
+      setSheetOpen(true);
       toast.success(`Verdict: ${decisionLabel(res.decision)}`);
+
+      // on a phone the engine log sits far below — take the user there
+      if (typeof window !== "undefined" && window.innerWidth <= 900) {
+        window.setTimeout(
+          () => logRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+          420
+        );
+      }
     } catch (e: any) {
       toast.error(e?.message || "Simulation failed");
     } finally {
@@ -142,6 +170,7 @@ export default function SimulationPage() {
     <AppShell title="Simulation" sub="Test a payment without spending anything">
       <div className="split">
         <Card>
+          <span ref={formRef} style={{ display: "block", scrollMarginTop: 96 }} />
           <CardHeader
             title="Try a payment"
             sub="Runs the real engine · nothing is signed, nothing is charged"
@@ -235,159 +264,46 @@ export default function SimulationPage() {
               ))}
             </div>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <Button variant="p" icon="play" onClick={run} loading={busy}>
-                Run simulation
-              </Button>
+            <div
+              style={{
+                display: "flex",
+                gap: 14,
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              <span className={nudge ? "nudge-wrap" : undefined}>
+                <Button
+                  variant="p"
+                  icon="play"
+                  onClick={run}
+                  loading={busy}
+                  className={nudge ? "nudging" : ""}
+                >
+                  Run simulation
+                </Button>
+              </span>
+
+              {nudge ? (
+                <span className="hintline">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 6l-6 6 6 6" />
+                  </svg>
+                  Click on Run simulation
+                </span>
+              ) : null}
+
+              {result && !sheetOpen ? (
+                <Button variant="s" icon="eye" onClick={() => setSheetOpen(true)}>
+                  View verdict
+                </Button>
+              ) : null}
             </div>
           </CardBody>
         </Card>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Card>
-            <CardHeader
-              title="Verdict"
-              sub="What would have happened"
-              right={
-                result ? (
-                  <span className={decisionTagClass(result.decision)}>
-                    {decisionLabel(result.decision)}
-                  </span>
-                ) : null
-              }
-            />
-            <CardBody>
-              {!result ? (
-                <EmptyState
-                  icon="flask"
-                  title="Nothing simulated yet"
-                  desc="Pick a scenario and press Run — the real risk engine answers."
-                />
-              ) : (
-                <>
-                  <div
-                    className={`verdict-hero ${
-                      result.decision === "ALLOW"
-                        ? "vh-ok"
-                        : result.decision === "DENY"
-                        ? "vh-no"
-                        : "vh-hold"
-                    }`}
-                  >
-                    <Icon
-                      name={
-                        result.decision === "ALLOW"
-                          ? "check"
-                          : result.decision === "DENY"
-                          ? "x"
-                          : "clock"
-                      }
-                    />
-                    <b>{decisionLabel(result.decision)}</b>
-                  </div>
-
-                  <h4
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 800,
-                      margin: "22px 0 4px",
-                      letterSpacing: "-.3px",
-                    }}
-                  >
-                    Policy checks
-                  </h4>
-
-                  {CHECKS.map((c) => {
-                    const hit = (result.reason_codes ?? []).some((r) =>
-                      c.codes.some((x) => r.includes(x))
-                    );
-                    return (
-                      <div className="chk" key={c.label}>
-                        <span
-                          className="cd"
-                          style={{
-                            background: hit ? "var(--bad-bg)" : "var(--ok-bg)",
-                            color: hit ? "var(--bad)" : "var(--ok)",
-                          }}
-                        >
-                          <Icon name={hit ? "x" : "check"} />
-                        </span>
-                        <span className="nm">{c.label}</span>
-                        <span
-                          className="vd"
-                          style={{ color: hit ? "var(--bad)" : "var(--ok)" }}
-                        >
-                          {hit ? "FAIL" : "PASS"}
-                        </span>
-                      </div>
-                    );
-                  })}
-
-                  <div className="chk">
-                    <span
-                      className="cd"
-                      style={{
-                        background:
-                          result.risk_score >= 70
-                            ? "var(--bad-bg)"
-                            : result.risk_score >= 40
-                            ? "var(--warn-bg)"
-                            : "var(--ok-bg)",
-                        color:
-                          result.risk_score >= 70
-                            ? "var(--bad)"
-                            : result.risk_score >= 40
-                            ? "var(--warn)"
-                            : "var(--ok)",
-                      }}
-                    >
-                      {result.risk_score}
-                    </span>
-                    <span className="nm">Risk score</span>
-                    <span className="vd" style={{ color: "var(--ink-2)" }}>
-                      {result.risk_score} / 100
-                    </span>
-                  </div>
-
-                  {(result.risk_factors ?? []).length > 0 ? (
-                    <div style={{ marginTop: 16 }}>
-                      {(result.risk_factors ?? []).map((f, i) => (
-                        <KV key={i} k={f.factor}>
-                          <span style={{ color: f.points > 0 ? "var(--bad)" : undefined }}>
-                            +{f.points}
-                          </span>
-                        </KV>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  <div
-                    style={{
-                      marginTop: 18,
-                      paddingTop: 15,
-                      borderTop: "1px solid var(--line)",
-                    }}
-                  >
-                    <b style={{ fontSize: 13, fontWeight: 800 }}>Overall reason</b>
-                    <p
-                      style={{
-                        fontSize: 13,
-                        marginTop: 5,
-                        lineHeight: 1.6,
-                        color:
-                          result.decision === "ALLOW" ? "var(--ok)" : "var(--ink-2)",
-                      }}
-                    >
-                      {result.decision === "ALLOW"
-                        ? "All policy checks passed. Payment authorized."
-                        : (result.reason_codes ?? []).join(" · ") || "See the codes above."}
-                    </p>
-                  </div>
-                </>
-              )}
-            </CardBody>
-          </Card>
-
+          <span ref={logRef} style={{ display: "block", scrollMarginTop: 96 }} />
           <Card>
             <CardHeader
               title="Engine log"
@@ -395,6 +311,20 @@ export default function SimulationPage() {
                 result
                   ? `${(result.policy_checks ?? []).length} checks ran`
                   : "waiting for a run"
+              }
+              right={
+                result ? (
+                  <>
+                    <span className={decisionTagClass(result.decision)}>
+                      {decisionLabel(result.decision)}
+                    </span>
+                    <Button variant="s" sm icon="eye" onClick={() => setSheetOpen(true)}>
+                      Verdict
+                    </Button>
+                  </>
+                ) : (
+                  <span className="eyebrow">DRY RUN</span>
+                )
               }
             />
             <CardBody style={{ padding: 0 }}>
@@ -449,7 +379,9 @@ export default function SimulationPage() {
                 <th>Agent</th>
                 <th>Amount</th>
                 <th>Expected</th>
-                <th />
+                <th className="stickr" style={{ textAlign: "right" }}>
+                  Load
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -460,7 +392,11 @@ export default function SimulationPage() {
                 ["4", "A large payment needs a human", "9× this agent's normal spend", "highvalue-bot-1", money(45), "APPROVAL", "t-hold"],
                 ["5", "The daily budget runs out", "Four go through, the fifth is stopped", "research-bot-1", money(4) + " ×5", "DENY", "t-no"],
               ].map((r, i) => (
-                <tr key={r[0]}>
+                <tr
+                  key={r[0]}
+                  className={`rowlink${active === SCENARIOS[i].key ? " justloaded" : ""}`}
+                  onClick={() => !busy && loadScenario(SCENARIOS[i])}
+                >
                   <td className="num">{r[0]}</td>
                   <td>
                     <b>{r[1]}</b>
@@ -471,17 +407,20 @@ export default function SimulationPage() {
                   <td>
                     <span className={`tag ${r[6]}`}>{r[5]}</span>
                   </td>
-                  <td>
+                  <td className="stickr">
                     <div className="act">
-                      <Button
-                        variant="s"
-                        sm
-                        icon="play"
-                        onClick={() => loadScenario(SCENARIOS[i])}
+                      <button
+                        className="iact"
+                        aria-label={`Load scenario ${r[0]}`}
+                        title="Load"
                         disabled={busy}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          loadScenario(SCENARIOS[i]);
+                        }}
                       >
-                        Load
-                      </Button>
+                        <Icon name="play" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -490,6 +429,200 @@ export default function SimulationPage() {
           </table>
         </div>
       </Card>
+
+      <Sheet
+        open={sheetOpen && !!result}
+        onClose={() => setSheetOpen(false)}
+        title="Simulation verdict"
+        sub={
+          result
+            ? `${money(Number(amount) || 0)} to ${domain} · risk ${result.risk_score}/100`
+            : undefined
+        }
+        wide
+      >
+        {result ? (
+          <div className="sheet-duo">
+            <div className="gbox">
+              <div className="gbox-h">
+                <b>Verdict</b>
+                <div className="r">
+                  <span className={decisionTagClass(result.decision)}>
+                    {decisionLabel(result.decision)}
+                  </span>
+                </div>
+              </div>
+              <div className="gbox-b">
+
+              <div
+                className={`verdict-hero ${
+                  result.decision === "ALLOW"
+                    ? "vh-ok"
+                    : result.decision === "DENY"
+                    ? "vh-no"
+                    : "vh-hold"
+                }`}
+              >
+                <Icon
+                  name={
+                    result.decision === "ALLOW"
+                      ? "check"
+                      : result.decision === "DENY"
+                      ? "x"
+                      : "clock"
+                  }
+                />
+                <b>{decisionLabel(result.decision)}</b>
+              </div>
+
+              <h4
+                style={{
+                  fontSize: 14,
+                  fontWeight: 800,
+                  margin: "22px 0 4px",
+                  letterSpacing: "-.3px",
+                }}
+              >
+                Policy checks
+              </h4>
+
+              {CHECKS.map((c) => {
+                const hit = (result.reason_codes ?? []).some((r) =>
+                  c.codes.some((x) => r.includes(x))
+                );
+                return (
+                  <div className="chk" key={c.label}>
+                    <span
+                      className="cd"
+                      style={{
+                        background: hit ? "var(--bad-bg)" : "var(--ok-bg)",
+                        color: hit ? "var(--bad)" : "var(--ok)",
+                      }}
+                    >
+                      <Icon name={hit ? "x" : "check"} />
+                    </span>
+                    <span className="nm">{c.label}</span>
+                    <span
+                      className="vd"
+                      style={{ color: hit ? "var(--bad)" : "var(--ok)" }}
+                    >
+                      {hit ? "FAIL" : "PASS"}
+                    </span>
+                  </div>
+                );
+              })}
+
+              <div className="chk">
+                <span
+                  className="cd"
+                  style={{
+                    background:
+                      result.risk_score >= 70
+                        ? "var(--bad-bg)"
+                        : result.risk_score >= 40
+                        ? "var(--warn-bg)"
+                        : "var(--ok-bg)",
+                    color:
+                      result.risk_score >= 70
+                        ? "var(--bad)"
+                        : result.risk_score >= 40
+                        ? "var(--warn)"
+                        : "var(--ok)",
+                  }}
+                >
+                  {result.risk_score}
+                </span>
+                <span className="nm">Risk score</span>
+                <span className="vd" style={{ color: "var(--ink-2)" }}>
+                  {result.risk_score} / 100
+                </span>
+              </div>
+
+              {(result.risk_factors ?? []).length > 0 ? (
+                <div style={{ marginTop: 16 }}>
+                  {(result.risk_factors ?? []).map((f, i) => (
+                    <KV key={i} k={f.factor}>
+                      <span style={{ color: f.points > 0 ? "var(--bad)" : undefined }}>
+                        +{f.points}
+                      </span>
+                    </KV>
+                  ))}
+                </div>
+              ) : null}
+
+              <div
+                style={{
+                  marginTop: 18,
+                  paddingTop: 15,
+                  borderTop: "1px solid var(--line)",
+                }}
+              >
+                <b style={{ fontSize: 13, fontWeight: 800 }}>Overall reason</b>
+                <p
+                  style={{
+                    fontSize: 13,
+                    marginTop: 5,
+                    lineHeight: 1.6,
+                    color:
+                      result.decision === "ALLOW" ? "var(--ok)" : "var(--ink-2)",
+                  }}
+                >
+                  {result.decision === "ALLOW"
+                    ? "All policy checks passed. Payment authorized."
+                    : (result.reason_codes ?? []).join(" · ") || "See the codes above."}
+                </p>
+              </div>
+              </div>
+            </div>
+
+            <div className="gbox">
+              <div className="gbox-h">
+                <b>Engine log</b>
+                <div className="r">
+                  <span className="tag t-info">
+                    {(result.policy_checks ?? []).length} checks
+                  </span>
+                </div>
+              </div>
+              <div className="gbox-b flush">
+                <Terminal title="simulate · dry-run" height={330} flush>
+                  <span className="m">$ POST /v1/simulate</span>
+                  {"\n"}
+                  {(result.policy_checks ?? []).map((c, i) => (
+                    <span key={i}>
+                      <span className={c.passed ? "g" : "r"}>
+                        {c.passed ? "\u2714" : "\u2716"}
+                      </span>{" "}
+                      {c.check.padEnd(24, " ")}
+                      <span className={c.passed ? "m" : "r"}>{c.detail}</span>
+                      {"\n"}
+                    </span>
+                  ))}
+                  {"\n"}
+                  {"  risk total  "}
+                  <span className={result.risk_score >= 70 ? "r" : "y"}>
+                    {result.risk_score}
+                  </span>
+                  {" / 100\n"}
+                  {"  verdict     "}
+                  <span
+                    className={
+                      result.decision === "ALLOW"
+                        ? "g"
+                        : result.decision === "DENY"
+                        ? "r"
+                        : "y"
+                    }
+                  >
+                    {decisionLabel(result.decision)}
+                  </span>
+                </Terminal>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Sheet>
+
     </AppShell>
   );
 }

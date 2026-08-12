@@ -11,9 +11,11 @@ import {
   ErrorState,
   KV,
   Pagination,
+  Sheet,
   Skeleton,
   Terminal,
 } from "@/components/ui";
+import Icon from "@/components/Icon";
 import { useApiList } from "@/lib/hooks";
 import { istDateTime, istTime, shortId } from "@/lib/format";
 import { useMoney } from "@/lib/currency";
@@ -50,7 +52,7 @@ export default function AuditLogsPage() {
     return true;
   });
   const total = agentQ || q ? rows.length : meta?.total ?? rows.length;
-  const detail = selected ?? rows[0] ?? null;
+  const detail = selected;
 
   const agentNames = Array.from(
     new Set(all.map((r) => r.transaction?.agent?.name).filter(Boolean) as string[])
@@ -170,12 +172,18 @@ export default function AuditLogsPage() {
                     <th>Merchant</th>
                     <th>Amount</th>
                     <th>Payload hash</th>
-                    <th />
+                    <th className="stickr" style={{ textAlign: "right" }}>
+                      View
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((l) => (
-                    <tr key={l.id}>
+                    <tr
+                      key={l.id}
+                      className="rowlink"
+                      onClick={() => setSelected(l)}
+                    >
                       <td
                         className="mono"
                         style={{ fontSize: 12, color: "var(--ink-3)", whiteSpace: "nowrap" }}
@@ -198,11 +206,19 @@ export default function AuditLogsPage() {
                       <td>
                         <span className="code">{shortId(l.payloadHash, 10, 6)}</span>
                       </td>
-                      <td>
+                      <td className="stickr">
                         <div className="act">
-                          <Button variant="s" sm icon="eye" onClick={() => setSelected(l)}>
-                            View
-                          </Button>
+                          <button
+                            className="iact"
+                            aria-label="View this entry"
+                            title="View"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelected(l);
+                            }}
+                          >
+                            <Icon name="eye" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -215,29 +231,47 @@ export default function AuditLogsPage() {
         )}
       </Card>
 
-      <div className="split mt">
-        <Card>
-          <CardHeader
-            title="Raw entry"
-            sub="Exactly what is stored"
-            right={
-              <Button variant="s" sm onClick={copyJson} disabled={!detail}>
-                Copy
-              </Button>
-            }
-          />
-          <CardBody style={{ padding: 0 }}>
-            <Terminal title={`audit · ${detail ? shortId(detail.id, 10, 4) : "—"}`} height={250} flush>
-              {detail ? JSON.stringify(detail, null, 2) : "No entry selected."}
-            </Terminal>
-          </CardBody>
-        </Card>
+      <Sheet
+        open={!!detail}
+        onClose={() => setSelected(null)}
+        title="Audit entry"
+        sub={
+          detail
+            ? `${shortId(detail.id, 12, 5)} · ${istDateTime(detail.createdAt)} IST`
+            : undefined
+        }
+        wide
+      >
+        {detail ? (
+          <div className="sheet-duo">
+            <div className="gbox">
+              <div className="gbox-h">
+                <b>Raw entry</b>
+                <div className="r">
+                  <Button variant="s" sm icon="dl" onClick={copyJson}>
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              <div className="gbox-b flush">
+                <Terminal
+                  title={`audit · ${shortId(detail.id, 10, 4)}`}
+                  height={330}
+                  flush
+                >
+                  {JSON.stringify(detail, null, 2)}
+                </Terminal>
+              </div>
+            </div>
 
-        <Card>
-          <CardHeader title="Chain integrity" sub="Each row links to the one before it" />
-          <CardBody>
-            {detail ? (
-              <>
+            <div className="gbox">
+              <div className="gbox-h">
+                <b>Chain integrity</b>
+                <div className="r">
+                  <span className="tag t-ok">LINKED</span>
+                </div>
+              </div>
+              <div className="gbox-b">
                 <KV k="Entry ID">
                   <span className="mono" style={{ fontSize: 12 }}>
                     {detail.id}
@@ -249,40 +283,38 @@ export default function AuditLogsPage() {
                   </span>
                 </KV>
                 <KV k="Payload hash">
-                  <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
+                  <span className="mono" style={{ fontSize: 11.5 }}>
                     {detail.payloadHash}
                   </span>
                 </KV>
                 <KV k="Previous hash">
-                  <span className="mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
+                  <span className="mono" style={{ fontSize: 11.5 }}>
                     {detail.prevHash ?? "— genesis —"}
                   </span>
                 </KV>
                 <KV k="Written at">{istDateTime(detail.createdAt)} IST</KV>
-              </>
-            ) : (
-              <Skeleton lines={4} />
-            )}
 
-            <div
-              style={{
-                marginTop: 16,
-                padding: "14px 16px",
-                borderRadius: "var(--r)",
-                background: "var(--tint)",
-                border: "1px solid var(--line)",
-                fontSize: 13,
-                color: "var(--ink-2)",
-                lineHeight: 1.6,
-              }}
-            >
-              Every write goes through the same append-only path and carries the hash of
-              the row before it. There is no update or delete endpoint for audit rows —
-              not even for an admin.
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: "14px 16px",
+                    borderRadius: 16,
+                    background: "var(--b-100)",
+                    fontSize: 12.5,
+                    color: "var(--b-800)",
+                    lineHeight: 1.65,
+                  }}
+                >
+                  Every write goes through the same append-only path and carries the
+                  hash of the row before it. There is no update or delete endpoint for
+                  audit rows — not even for an admin.
+                </div>
+              </div>
             </div>
-          </CardBody>
-        </Card>
-      </div>
+          </div>
+        ) : null}
+      </Sheet>
+
     </AppShell>
   );
 }
