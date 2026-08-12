@@ -3,10 +3,26 @@ import { getSession, signOut } from "next-auth/react";
 
 const rawBaseUrl =
   process.env.NEXT_PUBLIC_API_URL || "https://policypay-production.up.railway.app";
+
+/** Real API origin — used for display (Connect / Settings) and server-side calls. */
 export const API_BASE = rawBaseUrl.replace(/\/$/, "");
 
+/**
+ * Same-origin proxy. next.config.js rewrites `/api/gateway/*` to the backend.
+ *
+ * The browser must not call the Railway host directly: some networks, DNS
+ * resolvers and extensions fail with ERR_NAME_NOT_RESOLVED and every page
+ * then loads empty. Server-side code (NextAuth) still hits API_BASE.
+ */
+export const BROWSER_API_BASE = "/api/gateway";
+
+function clientBaseUrl(): string {
+  if (typeof window !== "undefined") return BROWSER_API_BASE;
+  return API_BASE;
+}
+
 const client = axios.create({
-  baseURL: API_BASE,
+  baseURL: clientBaseUrl(),
   headers: { "Content-Type": "application/json" },
   timeout: 20000,
 });
@@ -38,6 +54,8 @@ export function clearApiTokenCache() {
 }
 
 client.interceptors.request.use(async (config) => {
+  // Always same-origin in the browser, even if this module first loaded on the server.
+  if (typeof window !== "undefined") config.baseURL = BROWSER_API_BASE;
   if (config.url) config.url = normalizeUrl(config.url);
   const token = await getApiToken();
   if (token) config.headers.set("Authorization", `Bearer ${token}`);
