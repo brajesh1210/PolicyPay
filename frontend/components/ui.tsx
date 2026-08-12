@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { createPortal } from "react-dom";
 import Icon from "./Icon";
 import { riskColor } from "@/lib/format";
 
@@ -544,5 +545,84 @@ export function StatCard({
       )}
       {foot ? <div className="dl">{foot}</div> : null}
     </div>
+  );
+}
+
+/* ── Sheet ────────────────────────────────────
+   A glass panel that rises over the page when a row's View button is
+   pressed. Desktop: centred, side by side. Mobile: full width, stacked
+   and scrollable. Escape closes it, and so does the backdrop.
+   ─────────────────────────────────────────── */
+export function Sheet({
+  open,
+  onClose,
+  title,
+  sub,
+  children,
+  wide,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  sub?: string;
+  children: React.ReactNode;
+  wide?: boolean;
+}) {
+  const [shown, setShown] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  // the sheet renders into <body> so no ancestor can trap it
+  React.useEffect(() => setMounted(true), []);
+
+  React.useEffect(() => {
+    if (!open) {
+      setShown(false);
+      return;
+    }
+    // one frame later so the transition actually runs
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  if (!open || !mounted) return null;
+
+  return createPortal(
+    <div
+      className={`sheet-wrap${shown ? " in" : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className={`sheet${wide ? " wide" : ""}`}>
+        <div className="sheet-h">
+          <div className="t">
+            <b>{title}</b>
+            {sub ? <span>{sub}</span> : null}
+          </div>
+          <button className="sheet-x" onClick={onClose} aria-label="Close">
+            <Icon name="x" />
+          </button>
+        </div>
+        <div className="sheet-b">{children}</div>
+      </div>
+    </div>,
+    document.body
   );
 }

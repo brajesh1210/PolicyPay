@@ -125,9 +125,11 @@ button{background:none;border:none;cursor:pointer}
 .main{margin-left:calc(var(--sbw) + var(--sbgap) * 2);min-height:100vh;
   display:flex;flex-direction:column;min-width:0}
 .tb{position:sticky;top:0;z-index:50;min-height:84px;flex:none;display:flex;align-items:center;
-  gap:14px;padding:14px clamp(18px,2.4vw,34px) 10px;
-  background:linear-gradient(var(--page) 66%,rgba(237,240,246,0));
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  gap:14px;padding:14px clamp(18px,2.4vw,34px) 14px;
+  background:linear-gradient(var(--page) 72%,rgba(237,240,246,.86));
+  backdrop-filter:blur(10px) saturate(150%);-webkit-backdrop-filter:blur(10px) saturate(150%);
+  border-bottom:1px solid rgba(77,141,246,.18);
+  box-shadow:0 1px 0 rgba(255,255,255,.75)}
 .burger{display:none;width:42px;height:42px;border-radius:14px;background:var(--card);
   box-shadow:var(--nm-sm);position:relative;flex:none}
 .burger i{position:absolute;left:12px;width:18px;height:1.9px;background:var(--ink);border-radius:2px;
@@ -848,3 +850,188 @@ select.in{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=
 .lvrow .t{flex:1;min-width:0}
 .lvrow .t b{display:block;font-size:13.5px;font-weight:700}
 .lvrow .t span{display:block;font-size:11.5px;color:var(--ink-3);margin-top:2px}
+
+/* ══ Sheet — the glass panel that View buttons raise ═══════════ */
+.sheet-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;
+  z-index:120;display:flex;align-items:center;
+  justify-content:center;padding:clamp(14px,3vw,40px);
+  background:rgba(24,35,56,.42);
+  backdrop-filter:blur(7px) saturate(130%);-webkit-backdrop-filter:blur(7px) saturate(130%);
+  opacity:0;transition:opacity 240ms var(--e);overflow-y:auto}
+.sheet-wrap.in{opacity:1}
+
+.sheet{width:min(1080px,100%);max-height:100%;display:flex;flex-direction:column;
+  border-radius:26px;overflow:hidden;
+  background:linear-gradient(150deg,rgba(255,255,255,.96),rgba(248,250,254,.93));
+  backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
+  box-shadow:0 30px 70px rgba(16,26,52,.3),
+             inset 0 0 0 1px rgba(255,255,255,.85),
+             inset 0 1px 0 rgba(255,255,255,1);
+  transform:translateY(22px) scale(.975);opacity:0;
+  transition:transform 320ms var(--e),opacity 260ms var(--e)}
+.sheet.wide{width:min(1240px,100%)}
+.sheet-wrap.in .sheet{transform:none;opacity:1}
+
+.sheet-h{display:flex;align-items:center;gap:14px;flex:none;
+  padding:20px clamp(18px,2.4vw,26px);
+  border-bottom:1px solid rgba(77,141,246,.16)}
+.sheet-h .t{min-width:0;flex:1}
+.sheet-h .t b{display:block;font-size:17px;font-weight:800;letter-spacing:-.45px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-h .t span{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-x{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--card);box-shadow:var(--nm-sm);color:var(--ink-2);
+  transition:all var(--t) var(--e)}
+.sheet-x:hover{color:var(--bad);transform:rotate(90deg);box-shadow:var(--nm)}
+.sheet-x svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round}
+.sheet-b{flex:1;min-height:0;overflow-y:auto;padding:clamp(16px,2.2vw,24px);
+  -webkit-overflow-scrolling:touch}
+
+/* two glass boxes side by side inside a sheet */
+.sheet-duo{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,1.8vw,20px);align-items:start}
+.sheet-duo > *{min-width:0}
+.gbox{border-radius:20px;overflow:hidden;
+  background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(244,246,251,.82));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),
+             6px 8px 22px rgba(163,177,201,.28)}
+.gbox-h{padding:15px 18px;border-bottom:1px solid rgba(77,141,246,.14);
+  display:flex;align-items:center;gap:10px}
+.gbox-h b{font-size:14.5px;font-weight:800;letter-spacing:-.3px;flex:1;min-width:0}
+.gbox-h .r{margin-left:auto;display:flex;gap:8px;align-items:center;flex:none}
+.gbox-b{padding:16px 18px}
+.gbox-b.flush{padding:0}
+@media(max-width:860px){ .sheet-duo{grid-template-columns:1fr} }
+
+/* the row action rail that stays glued to the right edge on mobile */
+.tw{position:relative}
+th.stickr, td.stickr{position:sticky;right:0;z-index:3;
+  background:var(--tint);width:1%;white-space:nowrap;
+  box-shadow:-10px 0 12px -8px rgba(24,35,56,.18)}
+tbody tr:hover td.stickr{background:var(--card)}
+th.stickr{z-index:4}
+
+/* ══ mobile: make every page actually usable ══════════════════ */
+@media(max-width:760px){
+  /* the page title was being clipped */
+  .tb{min-height:0;flex-wrap:wrap;padding:12px 16px 12px;row-gap:10px}
+  .tb-h{order:2;flex-basis:100%;min-width:0}
+  .tb-h h1{white-space:normal;overflow:visible;font-size:22px;line-height:1.22}
+  .tb-h p{display:block;white-space:normal;font-size:12px;margin-top:3px}
+  .burger{order:1}
+  .tb-r{order:1;margin-left:auto}
+  .icb{width:40px;height:40px}
+  .icb svg{width:16px;height:16px}
+
+  /* page headers stack instead of squeezing */
+  .phead{flex-direction:column;align-items:stretch;gap:10px}
+  .phead .sp{display:none}
+  .phead .btn{width:100%}
+  .psearch{width:100%;order:0}
+  .segs{width:100%;overflow-x:auto;justify-content:flex-start;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .segs::-webkit-scrollbar{display:none}
+  .seg{flex:none}
+  .phead h2{font-size:18px}
+
+  /* filter bars go one per row */
+  .fbar{grid-template-columns:1fr}
+  .fbar .go .btn{width:100%}
+
+  /* approvals: one card per row, buttons full width */
+  .apg{grid-template-columns:1fr !important}
+  .apc{padding:18px}
+  .apc .amt b{font-size:27px}
+  .apc .acts{grid-template-columns:1fr;gap:10px}
+  .apc .who-r .tag{margin-left:0}
+  .apc .who-r .t{min-width:100%}
+
+  /* the outer 2-column split becomes 1 everywhere */
+  .split, .split3{grid-template-columns:1fr !important}
+
+  /* alerts */
+  .arow{flex-wrap:wrap;padding:16px}
+  .arow > .ai{width:44px;height:44px}
+  .arow > .ai svg{width:19px;height:19px}
+  .arow .rt{width:100%;justify-content:space-between;margin-top:4px}
+
+  /* policy tiles two-up, never clipped */
+  .ptiles{grid-template-columns:1fr 1fr;gap:9px}
+  .ptile{padding:11px}
+  .ptile .g{width:27px;height:27px;border-radius:9px}
+  .ptile .t b{font-size:13px}
+
+  /* sheets go full-bleed */
+  .sheet-wrap{padding:0;align-items:flex-end}
+  .sheet{width:100%;max-height:92vh;border-radius:24px 24px 0 0;
+    transform:translateY(40px)}
+  .sheet-h{padding:17px 18px}
+  .sheet-b{padding:16px}
+
+  /* connect page */
+  .apick{grid-template-columns:1fr}
+  .cstep{gap:12px}
+  .snip-b pre{font-size:11.5px;padding:14px 54px 14px 14px}
+
+  /* settings side rail becomes a scroll strip */
+  .stabs{flex-direction:row;overflow-x:auto;gap:8px;padding-bottom:2px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .stabs::-webkit-scrollbar{display:none}
+  .stab{flex:none;padding:11px 15px}
+
+  /* tables: readable, and the action rail stays reachable */
+  table{min-width:560px}
+  th,td{padding:12px 13px}
+  .tw{border-radius:14px}
+}
+
+@media(max-width:460px){
+  .tb-h h1{font-size:20px}
+  .stats{gap:12px}
+  .apc .amt b{font-size:25px}
+  .ptiles{grid-template-columns:1fr}
+  table{min-width:480px}
+}
+
+/* ══ interaction polish ═══════════════════════════════════════ */
+
+/* rows that open a sheet should feel clickable */
+tbody tr.rowlink{cursor:pointer}
+tbody tr.rowlink:active{transform:scale(.998)}
+
+/* the pulse we put on Run simulation until it is pressed */
+@keyframes nudge{
+  0%,100%{transform:translateY(0);box-shadow:5px 6px 16px rgba(29,99,228,.34)}
+  50%    {transform:translateY(-3px);box-shadow:8px 12px 26px rgba(29,99,228,.46)}
+}
+@keyframes haloring{
+  0%  {box-shadow:0 0 0 0 rgba(77,141,246,.45)}
+  70% {box-shadow:0 0 0 16px rgba(77,141,246,0)}
+  100%{box-shadow:0 0 0 0 rgba(77,141,246,0)}
+}
+.btn.nudging{animation:nudge 1.5s var(--e) infinite}
+.nudge-wrap{position:relative;display:inline-flex}
+.nudge-wrap::after{content:'';position:absolute;inset:0;border-radius:100px;
+  pointer-events:none;animation:haloring 1.5s var(--e) infinite}
+
+/* the "click Run simulation" hint that sits beside the button */
+.hintline{display:inline-flex;align-items:center;gap:9px;
+  font-size:13px;font-weight:700;color:var(--b-700);
+  animation:hintin 320ms var(--e) both}
+.hintline svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round;animation:pointleft 1.2s var(--e) infinite}
+@keyframes pointleft{0%,100%{transform:translateX(0)}50%{transform:translateX(-5px)}}
+@keyframes hintin{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+
+/* a row that was just loaded from the scenario table */
+@keyframes flashrow{from{background:rgba(77,141,246,.16)}to{background:transparent}}
+tbody tr.justloaded{animation:flashrow 1.4s var(--e)}
+
+/* generic rise-in for content that appears after an action */
+@keyframes risein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.risein{animation:risein 340ms var(--e) both}
+
+@media (prefers-reduced-motion: reduce){
+  .btn.nudging,.nudge-wrap::after,.hintline svg{animation:none}
+}

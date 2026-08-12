@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import Icon from "@/components/Icon";
 import {
@@ -140,6 +141,7 @@ function SpendLine({
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const money = useMoney();
   const ov = useApi<Overview>("/v1/analytics/overview");
   const tr = useApi<SpendingTrends>("/v1/analytics/spending-trends", { days: 7 });
@@ -435,7 +437,12 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {(rt.data?.transactions ?? []).map((t) => (
-                  <tr key={t.id}>
+                  <tr
+                    key={t.id}
+                    className="rowlink"
+                    onClick={() => router.push("/transactions")}
+                    title="Open in Transactions"
+                  >
                     <td>
                       <b>{t.agentName}</b>
                       <div className="sub mono">{shortId(t.id)}</div>
