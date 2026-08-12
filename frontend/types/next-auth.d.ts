@@ -4,6 +4,8 @@ import "next-auth/jwt";
 declare module "next-auth" {
   interface Session {
     apiToken?: string;
+    keepSignedIn?: boolean;
+    stayUntil?: number;
     user: {
       id?: string;
       role?: string;
@@ -16,6 +18,7 @@ declare module "next-auth" {
   interface User {
     role?: string;
     apiToken?: string;
+    keepSignedIn?: boolean;
   }
 }
 
@@ -24,5 +27,7 @@ declare module "next-auth/jwt" {
     userId?: string;
     role?: string;
     apiToken?: string;
+    keepSignedIn?: boolean;
+    stayUntil?: number;
   }
 }

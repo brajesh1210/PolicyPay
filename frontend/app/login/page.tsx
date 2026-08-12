@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Icon from "@/components/Icon";
+import { Switch } from "@/components/ui";
+import { KEEP_INTENT_KEY } from "@/lib/remember";
 
 function GoogleMark() {
   return (
@@ -49,6 +51,7 @@ function LoginForm() {
   const [password, setPassword] = useState("Demo1234!");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [error, setError] = useState<string | null>(
     urlError ? OAUTH_ERRORS[urlError] || "Sign-in failed. Try again." : null
   );
@@ -58,9 +61,16 @@ function LoginForm() {
     setBusy(true);
     setError(null);
 
+    try {
+      sessionStorage.setItem(KEEP_INTENT_KEY, keepSignedIn ? "1" : "0");
+    } catch {
+      /* private mode */
+    }
+
     const res = await signIn("credentials", {
       email,
       password,
+      keepSignedIn: keepSignedIn ? "1" : "0",
       redirect: false,
     });
 
@@ -70,16 +80,23 @@ function LoginForm() {
       return;
     }
 
-    // router.push() can fire before the session cookie is readable, and the
-    // dashboard then bounces straight back to /login — which is why the
-    // first click used to do nothing. A full navigation guarantees the
-    // cookie is sent with the request for the next page.
+    if (keepSignedIn) {
+      await fetch("/api/auth/remember", { method: "POST" }).catch(() => null);
+    } else {
+      await fetch("/api/auth/remember", { method: "DELETE" }).catch(() => null);
+    }
+
     window.location.assign(callbackUrl);
   }
 
   function onGoogle() {
     setGoogleBusy(true);
     setError(null);
+    try {
+      sessionStorage.setItem(KEEP_INTENT_KEY, keepSignedIn ? "1" : "0");
+    } catch {
+      /* private mode */
+    }
     signIn("google", { callbackUrl });
   }
 
@@ -154,6 +171,19 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={anyBusy}
+                />
+              </div>
+
+              <div className="lg-keep">
+                <span>
+                  <b>Keep me signed in</b>
+                  <span>Stay signed in for 8 hours, even after you leave</span>
+                </span>
+                <Switch
+                  checked={keepSignedIn}
+                  onChange={setKeepSignedIn}
+                  label="Keep me signed in"
                   disabled={anyBusy}
                 />
               </div>

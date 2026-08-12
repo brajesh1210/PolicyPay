@@ -10,6 +10,7 @@ router.get("/", (req, res, next) => agentsController.list(req, res, next));
 router.post("/", (req, res, next) => agentsController.create(req, res, next));
 router.get("/:id", (req, res, next) => agentsController.getById(req, res, next));
 router.put("/:id", (req, res, next) => agentsController.update(req, res, next));
+router.patch("/:id", (req, res, next) => agentsController.update(req, res, next));
 router.delete("/:id", (req, res, next) => agentsController.delete(req, res, next));
 
 router.patch("/:id/kill-switch", (req, res, next) => agentsController.setKillSwitch(req, res, next));

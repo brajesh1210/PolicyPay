@@ -392,8 +392,8 @@
 }
 @media(max-width:900px){
 .lp .links{display:none}
-.lp .nav-r .btn-g{display:none}
-.lp .burger{display:block}
+.lp .nav-r .btn-g{display:inline-flex}
+.lp .nav-r .btn{min-height:40px;padding:0 14px;font-size:13.5px}
 .lp .trio{grid-template-columns:1fr}
 .lp .pc{flex-direction:row;align-items:flex-start;gap:16px}
 .lp .pc-ic{width:42px;height:42px}
@@ -415,7 +415,8 @@
   .lp h2{letter-spacing:-0.5px}
 }
 @media(max-width:420px){
-.lp .nav-r .btn-p{padding:0 16px;font-size:13.5px}
+.lp .nav-r{gap:6px}
+.lp .nav-r .btn-p,.lp .nav-r .btn-g{padding:0 12px;font-size:13px}
 .lp .brand span{font-size:16px}
 .lp h1{font-size:clamp(28px,7.6vw,34px)}
 }
