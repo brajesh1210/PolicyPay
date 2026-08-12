@@ -176,10 +176,7 @@ function LoginForm() {
               </div>
 
               <div className="lg-keep">
-                <span>
-                  <b>Keep me signed in</b>
-                  <span>Stay signed in for 8 hours, even after you leave</span>
-                </span>
+                <span>Keep me signed in</span>
                 <Switch
                   checked={keepSignedIn}
                   onChange={setKeepSignedIn}

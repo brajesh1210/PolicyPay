@@ -46,7 +46,11 @@ export default function AgentsPage() {
   const pausedCount = agents.filter((a) => a.status !== "ACTIVE").length;
 
   const shown = useMemo(() => {
-    const base = agents.filter((a) => (filter === "all" ? true : a.status === filter));
+    const base = agents.filter((a) => {
+      if (filter === "all") return true;
+      if (filter === "ACTIVE") return a.status === "ACTIVE";
+      return a.status !== "ACTIVE";
+    });
     const needle = q.trim().toLowerCase();
     if (!needle) return base;
     return base.filter(
@@ -72,7 +76,7 @@ export default function AgentsPage() {
         name: name.trim(),
         description: desc.trim() || undefined,
         policyId: policyId || policies[0]?.id,
-        status: paused ? "PAUSED" : "ACTIVE",
+        status: paused ? "INACTIVE" : "ACTIVE",
       });
       const key = res?.apiKey ?? res?.api_key ?? res?.key ?? null;
       if (key) setNewKey({ name: name.trim(), key });
@@ -90,10 +94,10 @@ export default function AgentsPage() {
 
   async function togglePause(a: Agent) {
     setToggling(a.id);
-    const next = a.status === "ACTIVE" ? "PAUSED" : "ACTIVE";
+    const next = a.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
-      await apiSend("patch", `/v1/agents/${a.id}`, { status: next });
-      toast.success(next === "PAUSED" ? `${a.name} paused` : `${a.name} resumed`);
+      await apiSend("put", `/v1/agents/${a.id}`, { status: next });
+      toast.success(next === "INACTIVE" ? `${a.name} paused` : `${a.name} resumed`);
       reload();
     } catch (err: any) {
       toast.error(err?.message || "Could not change the agent");
